@@ -9,7 +9,7 @@ export
     trans_xml
 
 
-using POMDPs
+using MOMDPs
 
 abstract AbstractPOMDPX <: Solver
 
@@ -362,7 +362,7 @@ function trans_xml(pomdp::POMDP, pomdpx::MOMDPX, out_file::IOStream)
             for (j, y) in enumerate(ystates)
                 actions!(aspace, pomdp, x, y)
                 acts = domain(aspace)
-                for (ai, a) in enumerate(act)
+                for (ai, a) in enumerate(acts)
                     transition!(d, pomdp, x, y, a) 
                     l = length(d)
                     for k = 1:l
