@@ -10,7 +10,10 @@ typealias Belief Vector{Float64}
 #  I think so far, it will most likely be a Vector{Int}
 #  QMDP, FIB, SARSOP all produce something amenable to this
 #  I just have to make sure I don't assume it is something else later
-type MOMDPAlphas 
+
+abstract Alphas
+
+type MOMDPAlphas <: Alphas
 
     alpha_vectors::Matrix{Float64}
     alpha_actions::Vector{Int64}
@@ -37,20 +40,25 @@ end
 
 
 function action(policy::MOMDPAlphas, b::Belief, x::Int64)
-
     vectors = policy.alpha_vectors
     actions = policy.alpha_actions
     states = policy.observable_states
     o = x - 1 # julia obs: 1-100, sarsop obs: 0-99
-
     utilities = vectors * b
-
     chunk = actions[find(s -> s == o, states)]
     a = chunk[indmax(utilities[find(s -> s == o, states)])] + 1
     return a
 end
 
-
 function value(policy::MOMDPAlphas, b::Belief, x::Int64)
-    
+    vectors = policy.alpha_vectors
+    actions = policy.alpha_actions
+    states = policy.observable_states
+    o = x - 1 # julia obs: 1-100, sarsop obs: 0-99
+    utilities = vectors * b
+    chunk = actions[find(s -> s == o, states)]
+    return maximum(utilities[find(s -> s == o, states)])
+    return a
 end
+
+
