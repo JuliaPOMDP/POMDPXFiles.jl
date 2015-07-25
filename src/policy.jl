@@ -1,7 +1,5 @@
 # this is taken from Louis Dressel's POMDPs.jl. Thanks Louis!
 
-typealias Belief Vector{Float64}
-
 ###########################################################################
 # ALPHA POLICY
 # Each row of alpha_vectors is an alpha_vector
@@ -19,7 +17,7 @@ type MOMDPAlphas <: Alphas
     alpha_actions::Vector{Int64}
     observable_states::Vector{Int64}
 
-    MOMDPAlphas(av::Matrix{Float64}, aa::Vector{Int64}, os::Vector{Int64}) = new(m, av, aa, os)
+    MOMDPAlphas(av::Matrix{Float64}, aa::Vector{Int64}, os::Vector{Int64}) = new(av, aa, os)
 
     # Constructor if no action list is given
     # Here, we 0-index actions, to match sarsop output
@@ -37,6 +35,26 @@ type MOMDPAlphas <: Alphas
     end
 end
 
+type POMDPAlphas <: Alphas
+    alpha_vectors::Matrix{Float64}
+    alpha_actions::Vector{Int64}
+
+    POMDPAlphas(av::Matrix{Float64}, aa::Vector{Int64}) = new(av, aa)
+
+    # Constructor if no action list is given
+    # Here, we 0-index actions, to match sarsop output
+    function POMDPAlphas(av::Matrix{Float64})
+        numActions = size(av, 1)
+        alist = [0:(numActions-1)]
+        return new(av, alist)
+    end
+
+    # Constructor reading policy from file
+    function POMDPAlphas(filename::String)
+        alpha_vectors, alpha_actions = read_pomdp(filename)
+        return new(alpha_vectors, alpha_actions)
+    end
+end
 
 
 function action(policy::MOMDPAlphas, b::Belief, x::Int64)
@@ -44,6 +62,8 @@ function action(policy::MOMDPAlphas, b::Belief, x::Int64)
     actions = policy.alpha_actions
     states = policy.observable_states
     o = x - 1 # julia obs: 1-100, sarsop obs: 0-99
+    #n = length(vectors)
+    #utilities = zeros(n)
     utilities = vectors * b
     chunk = actions[find(s -> s == o, states)]
     a = chunk[indmax(utilities[find(s -> s == o, states)])] + 1

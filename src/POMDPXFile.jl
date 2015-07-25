@@ -4,6 +4,7 @@ export
     AbstractPOMDPX,
     POMDPX,
     MOMDPX,
+    Alphas,
     POMDPAlphas,
     MOMDPAlphas,
     write,
