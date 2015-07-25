@@ -62,9 +62,7 @@ function action(policy::MOMDPAlphas, b::Belief, x::Int64)
     actions = policy.alpha_actions
     states = policy.observable_states
     o = x - 1 # julia obs: 1-100, sarsop obs: 0-99
-    #n = length(vectors)
-    #utilities = zeros(n)
-    utilities = vectors * b
+    utilities = prod(vectors, b) 
     chunk = actions[find(s -> s == o, states)]
     a = chunk[indmax(utilities[find(s -> s == o, states)])] + 1
     return a
@@ -75,10 +73,24 @@ function value(policy::MOMDPAlphas, b::Belief, x::Int64)
     actions = policy.alpha_actions
     states = policy.observable_states
     o = x - 1 # julia obs: 1-100, sarsop obs: 0-99
-    utilities = vectors * b
+    utilities = prod(vectors, b) 
     chunk = actions[find(s -> s == o, states)]
-    return maximum(utilities[find(s -> s == o, states)])
-    return a
+    v =  maximum(utilities[find(s -> s == o, states)])
+    return v
+end
+
+function prod(alphas::Matrix{Float64}, b::Belief)
+    @assert size(alphas, 2) == length(b) "Alpha and belief sizes not equal"
+    n = size(alphas, 1)
+    util = zeros(n)
+    for i = 1:n
+        s = 0.0
+        for j = 1:length(b)
+            s += alphas[i,j]*weight(b,j)
+        end
+        util[i] = s
+    end
+    return util
 end
 
 
