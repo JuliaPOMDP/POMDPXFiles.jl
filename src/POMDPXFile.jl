@@ -17,6 +17,8 @@ export
 using MOMDPs
 using LightXML
 
+import MOMDPs: action, value
+
 include("writer.jl")
 include("policy.jl")
 include("read.jl")
