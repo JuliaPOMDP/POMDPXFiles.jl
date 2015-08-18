@@ -376,7 +376,7 @@ function trans_xml(pomdp::POMDP, pomdpx::MOMDPX, out_file::IOStream)
     return nothing
 end
 function trans_xml(pomdp::POMDP, pomdpx::POMDPX, out_file::IOStream)
-    d = create_transition(pomdp)
+    d = create_transition_distribution(pomdp)
     sspace = states(pomdp)
     pomdp_states = domain(sspace)
     aspace = actions(pomdp)
@@ -425,7 +425,7 @@ end
 # output: None, writes the observation probability table to the output file
 ############################################################################
 function obs_xml(pomdp::POMDP, pomdpx::MOMDPX, out_file::IOStream)
-    d = create_observation(pomdp)
+    d = create_observation_distribution(pomdp)
     xspace = fully_obs_space(pomdp)
     yspace = part_obs_space(pomdp)
     xstates = domain(xspace)
@@ -470,7 +470,7 @@ function obs_xml(pomdp::POMDP, pomdpx::MOMDPX, out_file::IOStream)
     write(out_file, "\t</ObsFunction>\n")
 end
 function obs_xml(pomdp::POMDP, pomdpx::POMDPX, out_file::IOStream)
-    d = create_observation(pomdp)
+    d = create_observation_distribution(pomdp)
     sspace = states(pomdp)
     pomdp_states = domain(sspace)
     aspace = actions(pomdp)
