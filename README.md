@@ -1,6 +1,6 @@
 # POMDPXFile
 
-This module provides an interface for generating .pomdpx files that can be used with the SARSOP POMDP solver. 
+This module provides an interface for generating .pomdpx files that can be used with the [SARSOP](https://github.com/sisl/SARSOP.jl) [POMDPs.jl](https://github.com/sisl/POMDPs.jl) solver. 
 
 ## Installation
 
