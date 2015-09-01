@@ -15,7 +15,7 @@ type POMDPX <: AbstractPOMDPX
     #initial_belief::Vector{Float64} # belief over partially observed vars
 
     function POMDPX(file_name::String; description::String="",
-                    discount_factor::Float64=0.99, 
+                    discount_factor::Float64=0.95, 
                     initial_belief::Vector{Float64}=Float64[])
 
         if isempty(description)
@@ -53,7 +53,7 @@ type MOMDPX <: AbstractPOMDPX
     initial_belief::Vector{Float64}
 
     function MOMDPX(file_name::String; description::String="",
-                    discount_factor=0.99,
+                    discount_factor=0.95,
                     initial_belief::Vector{Float64}=Float64[])
 
         if isempty(description)

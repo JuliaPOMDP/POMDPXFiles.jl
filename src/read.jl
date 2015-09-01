@@ -40,7 +40,8 @@ function read_momdp(filename::ASCIIString)
 
     # Initialize the gamma matrix. This is basically a matrix with the alpha 
     #   vectors as rows.
-    alpha_vectors = Array(Float64, num_vectors, vector_length)
+    #alpha_vectors = Array(Float64, num_vectors, vector_length)
+    alpha_vectors = Array(Float64, vector_length, num_vectors)
     alpha_actions = Array(ASCIIString, num_vectors)
     observable_states = Array(ASCIIString, num_vectors)
     gammarow = 1
@@ -48,7 +49,8 @@ function read_momdp(filename::ASCIIString)
     # Fill in gamma
     for vector in vector_tags
         alpha = float(split(content(vector)))
-        alpha_vectors[gammarow, :] = alpha
+        #alpha_vectors[gammarow, :] = alpha
+        alpha_vectors[:,gammarow] = alpha
         alpha_actions[gammarow] = attribute(vector, "action")
         observable_states[gammarow] = attribute(vector, "obsValue")
         gammarow += 1
@@ -91,7 +93,8 @@ function read_pomdp(filename::ASCIIString)
 
     # Initialize the gamma matrix. This is basically a matrix with the alpha 
     #   vectors as rows.
-    alpha_vectors = Array(Float64, num_vectors, vector_length)
+    #alpha_vectors = Array(Float64, num_vectors, vector_length)
+    alpha_vectors = Array(Float64, vector_length, num_vectors)
     alpha_actions = Array(ASCIIString, num_vectors)
     observable_states = Array(ASCIIString, num_vectors)
     gammarow = 1
@@ -99,7 +102,8 @@ function read_pomdp(filename::ASCIIString)
     # Fill in gamma
     for vector in vector_tags
         alpha = float(split(content(vector)))
-        alpha_vectors[gammarow, :] = alpha
+        #alpha_vectors[gammarow, :] = alpha
+        alpha_vectors[:,gammarow] = alpha
         alpha_actions[gammarow] = attribute(vector, "action")
         observable_states[gammarow] = attribute(vector, "obsValue")
         gammarow += 1

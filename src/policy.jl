@@ -22,6 +22,7 @@ type MOMDPAlphas <: Alphas
     # Constructor if no action list is given
     # Here, we 0-index actions, to match sarsop output
     function MOMDPAlphas(av::Matrix{Float64})
+        # TODO: this is broken, actions and observations need to be obtained from pomdp
         numActions = size(av, 1)
         alist = [0:(numActions-1)]
         ostates = [0:(numActions-1)]
@@ -80,13 +81,13 @@ function value(policy::MOMDPAlphas, b::Belief, x::Int64)
 end
 
 function prod(alphas::Matrix{Float64}, b::Belief)
-    @assert size(alphas, 2) == length(b) "Alpha and belief sizes not equal"
-    n = size(alphas, 1)
+    @assert size(alphas, 1) == length(b) "Alpha and belief sizes not equal"
+    n = size(alphas, 2)
     util = zeros(n)
     for i = 1:n
         s = 0.0
         for j = 1:length(b)
-            s += alphas[i,j]*weight(b,j)
+            s += alphas[j,i]*weight(b,j)
         end
         util[i] = s
     end
