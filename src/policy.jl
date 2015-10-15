@@ -73,7 +73,7 @@ function value(policy::MOMDPAlphas, b::Belief, x::Int64)
     vectors = policy.alpha_vectors
     actions = policy.alpha_actions
     states = policy.observable_states
-    o = x - 1 # julia obs: 1-100, sarsop obs: 0-99
+    o = x - 1 # 1 indexing in julia 
     utilities = prod(vectors, b) 
     chunk = actions[find(s -> s == o, states)]
     v =  maximum(utilities[find(s -> s == o, states)])

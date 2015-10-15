@@ -1,4 +1,9 @@
-abstract AbstractPOMDPX <: Solver
+#################################################################
+# This file implements a .pomdpx file generator using the
+# POMDPs.jl interface.
+#################################################################
+
+abstract AbstractPOMDPX 
 
 type POMDPX <: AbstractPOMDPX
     file_name::String
@@ -391,10 +396,10 @@ function trans_xml(pomdp::POMDP, pomdpx::POMDPX, out_file::IOStream)
     str = "$(str)\t\t\t<Parameter>\n"
     write(out_file, str)
     for (i, s) in enumerate(pomdp_states)
-        actions!(aspace, pomdp, s)
+        actions(pomdp, s, aspace)
         acts = domain(aspace)
         for (ai, a) in enumerate(acts)
-            transition!(d, pomdp, s, a) 
+            transition(pomdp, s, a, d)
             l = length(d)
             for k = 1:l
                 w = weight(d, k)
@@ -487,10 +492,10 @@ function obs_xml(pomdp::POMDP, pomdpx::POMDPX, out_file::IOStream)
     write(out_file, str)
 
     for (i, s) in enumerate(pomdp_states)
-        actions!(aspace, pomdp, s)
+        actions(pomdp, s, aspace)
         acts = domain(aspace)
         for (ai, a) in enumerate(acts)
-            observation!(d, pomdp, s, a) 
+            observation(pomdp, s, a, d)
             l = length(d)
             for k = 1:l
                 w = weight(d, k)
@@ -572,7 +577,7 @@ function reward_xml(pomdp::POMDP, pomdpx::POMDPX, out_file::IOStream)
     write(out_file, str)
 
     for (i, s) in enumerate(pomdp_states)
-        actions!(aspace, pomdp, s)
+        actions(pomdp, s, aspace)
         acts = domain(aspace)
         for (ai, a) in enumerate(acts)
             r = reward(pomdp, s, a) 
