@@ -34,6 +34,11 @@ type MOMDPAlphas <: Alphas
         alpha_vectors, alpha_actions, observable_states = read_momdp(filename)
         return new(alpha_vectors, alpha_actions, observable_states)
     end
+
+    # Default constructor
+    function MOMDPAlphas()
+        return new(zeros(0,0), zeros(Int64,0), zeros(Int64,0))
+    end
 end
 
 type POMDPAlphas <: Alphas
@@ -54,6 +59,11 @@ type POMDPAlphas <: Alphas
     function POMDPAlphas(filename::String)
         alpha_vectors, alpha_actions = read_pomdp(filename)
         return new(alpha_vectors, alpha_actions)
+    end
+
+    # Default constructor
+    function POMDPAlphas()
+        return new(zeros(0,0), zeros(Int64,0), zeros(Int64,0))
     end
 end
 
