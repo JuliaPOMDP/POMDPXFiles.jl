@@ -1,5 +1,16 @@
 module POMDPXFile
 
+if isdir(Pkg.dir("MOMDPs"))
+    using MOMDPs
+    import MOMDPs: action, value
+else
+    using POMDPs
+    import POMDPs: action, value
+end
+
+# import o avoid naming conflict in POMDPs.jl (value is overloaded in LightXML)
+import LightXML: parse_file, root, get_elements_by_tagname, attribute, content
+
 export 
     AbstractPOMDPX,
     POMDPX,
@@ -7,17 +18,13 @@ export
     Alphas,
     POMDPAlphas,
     MOMDPAlphas,
+
     write,
     read_momdp,
     read_pomdp,
     action,
     value
 
-
-using MOMDPs
-using LightXML
-
-import MOMDPs: action, value
 
 include("writer.jl")
 include("policy.jl")

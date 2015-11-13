@@ -1,16 +1,9 @@
 # this is taken from Louis Dressel's POMDPs.jl. Thanks Louis!
 
-###########################################################################
-# ALPHA POLICY
-# Each row of alpha_vectors is an alpha_vector
-###########################################################################
-# TODO: Give alpha_actions a type
-#  I think so far, it will most likely be a Vector{Int}
-#  QMDP, FIB, SARSOP all produce something amenable to this
-#  I just have to make sure I don't assume it is something else later
-
+# Abstract Type representing alpha vectors
 abstract Alphas
 
+# MOMDP alpha vectors are associated with a fully observable state variabel
 type MOMDPAlphas <: Alphas
 
     alpha_vectors::Matrix{Float64}
@@ -63,8 +56,25 @@ type POMDPAlphas <: Alphas
 
     # Default constructor
     function POMDPAlphas()
-        return new(zeros(0,0), zeros(Int64,0), zeros(Int64,0))
+        return new(zeros(0,0), zeros(Int64,0))
     end
+end
+
+
+function action(policy::POMDPAlphas, b::Belief)
+    vectors = policy.alpha_vectors
+    actions = policy.alpha_actions
+    utilities = prod(vectors, b) 
+    a = actions[indmax(utilities)] + 1
+    return a
+end
+
+function value(policy::POMDPAlphas, b::Belief)
+    vectors = policy.alpha_vectors
+    actions = policy.alpha_actions
+    utilities = prod(vectors, b) 
+    v =  maximum(utilities)
+    return v
 end
 
 
