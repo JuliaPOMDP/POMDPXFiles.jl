@@ -384,6 +384,8 @@ function trans_xml(pomdp::POMDP, pomdpx::POMDPX, out_file::IOStream)
     d = create_transition_distribution(pomdp)
     sspace = states(pomdp)
     pomdp_states = domain(sspace)
+    spspace = states(pomdp)
+    pomdp_pstates = domain(spspace)
     aspace = actions(pomdp)
 
     aname = pomdpx.action_name
@@ -400,14 +402,12 @@ function trans_xml(pomdp::POMDP, pomdpx::POMDPX, out_file::IOStream)
         acts = domain(aspace)
         for (ai, a) in enumerate(acts)
             transition(pomdp, s, a, d)
-            l = length(d)
-            for k = 1:l
-                w = weight(d, k)
-                if w > 0.0
-                    idx = index(d, k)
+            for (j, sp) in enumerate(pomdp_pstates)
+                p = pdf(d, sp)
+                if p > 0.0
                     str = "\t\t\t\t<Entry>\n"
-                    str = "$(str)\t\t\t\t\t<Instance>a$(ai-1) s$(i-1) s$(idx-1)</Instance>\n"
-                    str = "$(str)\t\t\t\t\t<ProbTable>$(w)</ProbTable>\n"
+                    str = "$(str)\t\t\t\t\t<Instance>a$(ai-1) s$(i-1) s$(j-1)</Instance>\n"
+                    str = "$(str)\t\t\t\t\t<ProbTable>$(p)</ProbTable>\n"
                     str = "$(str)\t\t\t\t</Entry>\n"
                     write(out_file, str)
                 end
@@ -479,6 +479,8 @@ function obs_xml(pomdp::POMDP, pomdpx::POMDPX, out_file::IOStream)
     sspace = states(pomdp)
     pomdp_states = domain(sspace)
     aspace = actions(pomdp)
+    ospace = observations(pomdp)
+    obs = domain(ospace)
 
     aname = pomdpx.action_name
     oname = pomdpx.obs_name
@@ -496,14 +498,12 @@ function obs_xml(pomdp::POMDP, pomdpx::POMDPX, out_file::IOStream)
         acts = domain(aspace)
         for (ai, a) in enumerate(acts)
             observation(pomdp, s, a, d)
-            l = length(d)
-            for k = 1:l
-                w = weight(d, k)
-                if w > 0.0
-                    idx = index(d, k)
+            for (oi, o) in enumerate(obs)
+                p = pdf(d, o)
+                if p > 0.0
                     str = "\t\t\t\t<Entry>\n"
-                    str = "$(str)\t\t\t\t\t<Instance>a$(ai-1) s$(i-1) o$(idx-1)</Instance>\n"
-                    str = "$(str)\t\t\t\t\t<ProbTable>$(w)</ProbTable>\n"
+                    str = "$(str)\t\t\t\t\t<Instance>a$(ai-1) s$(i-1) o$(oi-1)</Instance>\n"
+                    str = "$(str)\t\t\t\t\t<ProbTable>$(p)</ProbTable>\n"
                     str = "$(str)\t\t\t\t</Entry>\n"
                     write(out_file, str)
                 end
