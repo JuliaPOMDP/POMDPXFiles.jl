@@ -8,7 +8,6 @@ abstract AbstractPOMDPX
 type POMDPX <: AbstractPOMDPX
     file_name::String
     description::String
-    discount_factor::Float64
 
     state_name::String
     action_name::String
@@ -20,7 +19,6 @@ type POMDPX <: AbstractPOMDPX
     #initial_belief::Vector{Float64} # belief over partially observed vars
 
     function POMDPX(file_name::String; description::String="",
-                    discount_factor::Float64=0.95, 
                     initial_belief::Vector{Float64}=Float64[])
 
         if isempty(description)
@@ -30,7 +28,6 @@ type POMDPX <: AbstractPOMDPX
         self = new()
         self.file_name = file_name
         self.description = description
-        self.discount_factor = discount_factor
 
         self.state_name = "state"
         self.action_name = "action"
@@ -47,7 +44,6 @@ end
 type MOMDPX <: AbstractPOMDPX
     file_name::String
     description::String
-    discount_factor::Float64
 
     full_state_name::String
     part_state_name::String
@@ -58,7 +54,6 @@ type MOMDPX <: AbstractPOMDPX
     initial_belief::Vector{Float64}
 
     function MOMDPX(file_name::String; description::String="",
-                    discount_factor=0.95,
                     initial_belief::Vector{Float64}=Float64[])
 
         if isempty(description)
@@ -68,7 +63,6 @@ type MOMDPX <: AbstractPOMDPX
         self = new()
         self.file_name = file_name
         self.description = description
-        self.discount_factor = discount_factor
 
         self.full_state_name = "fully_obs"
         self.part_state_name = "part_obs"
@@ -86,7 +80,7 @@ end
 function Base.write(pomdp::POMDP, pomdpx::AbstractPOMDPX)
     file_name = pomdpx.file_name 
     description = pomdpx.description
-    discount_factor = pomdpx.discount_factor
+    discount_factor = discount(pomdp)
 
     # Open file to write to
     out_file = open("$file_name", "w")
@@ -258,6 +252,14 @@ function belief_xml(pomdp::POMDP, pomdpx::POMDPX, out_file::IOStream)
     str = "$(str)\t\t\t<Var>$(var)0</Var>\n"
     str = "$(str)\t\t\t<Parent>null</Parent>\n"
     str = "$(str)\t\t\t<Parameter type = \"TBL\">\n"
+    # check if initial_belief method exists
+    #if method_exists(initial_belief, (typeof(pomdp),))
+        # check dimension matching
+    #    yspace = states(pomdp)
+    #    ystates = domain(yspace)
+    #    @assert length(collect(ystates)) == length(belief)
+
+
     if isempty(belief)
         str = "$(str)\t\t\t\t<Entry>\n"
         str = "$(str)\t\t\t\t\t<Instance>-</Instance>\n"
@@ -387,6 +389,7 @@ function trans_xml(pomdp::POMDP, pomdpx::POMDPX, out_file::IOStream)
     spspace = states(pomdp)
     pomdp_pstates = domain(spspace)
     aspace = actions(pomdp)
+    acts = domain(aspace)
 
     aname = pomdpx.action_name
     var = pomdpx.state_name
@@ -398,8 +401,6 @@ function trans_xml(pomdp::POMDP, pomdpx::POMDPX, out_file::IOStream)
     str = "$(str)\t\t\t<Parameter>\n"
     write(out_file, str)
     for (i, s) in enumerate(pomdp_states)
-        actions(pomdp, s, aspace)
-        acts = domain(aspace)
         for (ai, a) in enumerate(acts)
             transition(pomdp, s, a, d)
             for (j, sp) in enumerate(pomdp_pstates)
@@ -479,6 +480,7 @@ function obs_xml(pomdp::POMDP, pomdpx::POMDPX, out_file::IOStream)
     sspace = states(pomdp)
     pomdp_states = domain(sspace)
     aspace = actions(pomdp)
+    acts = domain(aspace)
     ospace = observations(pomdp)
     obs = domain(ospace)
 
@@ -494,8 +496,6 @@ function obs_xml(pomdp::POMDP, pomdpx::POMDPX, out_file::IOStream)
     write(out_file, str)
 
     for (i, s) in enumerate(pomdp_states)
-        actions(pomdp, s, aspace)
-        acts = domain(aspace)
         for (ai, a) in enumerate(acts)
             observation(pomdp, s, a, d)
             for (oi, o) in enumerate(obs)
