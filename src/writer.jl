@@ -340,15 +340,17 @@ function trans_xml(pomdp::POMDP, pomdpx::MOMDPX, out_file::IOStream)
     xstates = domain(xspace)
     ystates = domain(yspace)
     aspace = actions(pomdp)
+    acts = domain(aspace)
 
     aname = pomdpx.action_name
     var1 = pomdpx.full_state_name
     var2 = pomdpx.part_state_name
     vars = [var1, var2]
     dists = [xt, yt]
+    spaces = [xstates, ystates]
 
     write(out_file, "\t<StateTransitionFunction>\n")
-    for (var, d)  in zip(vars, dists)
+    for (var, d, space)  in zip(vars, dists, spaces)
         str = "\t\t<CondProb>\n"
         str = "$(str)\t\t\t<Var>$(var)1</Var>\n"
         str = "$(str)\t\t\t<Parent>$(aname) $(var1)0 $(var2)0</Parent>\n"
@@ -356,18 +358,14 @@ function trans_xml(pomdp::POMDP, pomdpx::MOMDPX, out_file::IOStream)
         write(out_file, str)
         for (i, x) in enumerate(xstates)
             for (j, y) in enumerate(ystates)
-                actions!(aspace, pomdp, x, y)
-                acts = domain(aspace)
                 for (ai, a) in enumerate(acts)
-                    transition!(d, pomdp, x, y, a) 
-                    l = length(d)
-                    for k = 1:l
-                        w = weight(d, k)
-                        if w > 0.0
-                            idx = index(d, k)
+                    d = transition(pomdp, x, y, a, d)
+                    for (k, sp) in enumerate(space)
+                        p = pdf(d, sp)
+                        if p > 0.0
                             str = "\t\t\t\t<Entry>\n"
-                            str = "$(str)\t\t\t\t\t<Instance>a$(ai-1) s$(i-1) s$(j-1) s$(idx-1)</Instance>\n"
-                            str = "$(str)\t\t\t\t\t<ProbTable>$(w)</ProbTable>\n"
+                            str = "$(str)\t\t\t\t\t<Instance>a$(ai-1) s$(i-1) s$(j-1) s$(k-1)</Instance>\n"
+                            str = "$(str)\t\t\t\t\t<ProbTable>$(p)</ProbTable>\n"
                             str = "$(str)\t\t\t\t</Entry>\n"
                             write(out_file, str)
                         end
@@ -402,7 +400,7 @@ function trans_xml(pomdp::POMDP, pomdpx::POMDPX, out_file::IOStream)
     write(out_file, str)
     for (i, s) in enumerate(pomdp_states)
         for (ai, a) in enumerate(acts)
-            transition(pomdp, s, a, d)
+            d = transition(pomdp, s, a, d)
             for (j, sp) in enumerate(pomdp_pstates)
                 p = pdf(d, sp)
                 if p > 0.0
@@ -437,6 +435,9 @@ function obs_xml(pomdp::POMDP, pomdpx::MOMDPX, out_file::IOStream)
     xstates = domain(xspace)
     ystates = domain(yspace)
     aspace = actions(pomdp)
+    acts = domain(aspace)
+    ospace = observations(pomdp)
+    obs = domain(ospace)
 
     aname = pomdpx.action_name
     oname = pomdpx.obs_name
@@ -452,18 +453,15 @@ function obs_xml(pomdp::POMDP, pomdpx::MOMDPX, out_file::IOStream)
 
     for (i, x) in enumerate(xstates)
         for (j, y) in enumerate(ystates)
-            actions!(aspace, pomdp, x, y)
-            acts = domain(aspace)
             for (ai, a) in enumerate(acts)
-                observation!(d, pomdp, x, y, a) 
-                l = length(d)
-                for k = 1:l
-                    w = weight(d, k)
-                    if w > 0.0
-                        idx = index(d, k)
+                d = observation(pomdp, x, y, a, d)
+                for (k, o) in enumerate(obs)
+                    p = pdf(d, o)
+                    if p > 0.0
+                        idx = index(d, o)
                         str = "\t\t\t\t<Entry>\n"
-                        str = "$(str)\t\t\t\t\t<Instance>a$(ai-1) s$(i-1) s$(j-1) o$(idx-1)</Instance>\n"
-                        str = "$(str)\t\t\t\t\t<ProbTable>$(w)</ProbTable>\n"
+                        str = "$(str)\t\t\t\t\t<Instance>a$(ai-1) s$(i-1) s$(j-1) o$(k-1)</Instance>\n"
+                        str = "$(str)\t\t\t\t\t<ProbTable>$(p)</ProbTable>\n"
                         str = "$(str)\t\t\t\t</Entry>\n"
                         write(out_file, str)
                     end
@@ -529,6 +527,7 @@ function reward_xml(pomdp::POMDP, pomdpx::MOMDPX, out_file::IOStream)
     xstates = domain(xspace)
     ystates = domain(yspace)
     aspace = actions(pomdp)
+    acts = domain(aspace)
 
     aname = pomdpx.action_name
     var1 = pomdpx.full_state_name
@@ -544,8 +543,6 @@ function reward_xml(pomdp::POMDP, pomdpx::MOMDPX, out_file::IOStream)
 
     for (i, x) in enumerate(xstates)
         for (j, y) in enumerate(ystates)
-            actions!(aspace, pomdp, x, y)
-            acts = domain(aspace)
             for (ai, a) in enumerate(acts)
                 r = reward(pomdp, x, y, a) 
                 str = "\t\t\t\t<Entry>\n"
