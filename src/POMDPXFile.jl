@@ -19,7 +19,6 @@ export
     POMDPAlphas,
     MOMDPAlphas,
 
-    write,
     read_momdp,
     read_pomdp,
     action,
