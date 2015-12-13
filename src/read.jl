@@ -92,7 +92,7 @@ function read_pomdp(filename::ASCIIString)
     num_vectors_check = length(vector_tags) + length(sparsevector_tags)         # should be same as num_vectors
 
     # Initialize the gamma matrix. This is basically a matrix with the alpha 
-    #   vectors as rows.
+    #   vectors as columns.
     #alpha_vectors = Array(Float64, num_vectors, vector_length)
     alpha_vectors = Array(Float64, vector_length, num_vectors)
     alpha_actions = Array(ASCIIString, num_vectors)
