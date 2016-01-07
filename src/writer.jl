@@ -6,19 +6,19 @@
 abstract AbstractPOMDPX 
 
 type POMDPX <: AbstractPOMDPX
-    file_name::String
-    description::String
+    file_name::AbstractString
+    description::AbstractString
 
-    state_name::String
-    action_name::String
-    reward_name::String
-    obs_name::String
+    state_name::AbstractString
+    action_name::AbstractString
+    reward_name::AbstractString
+    obs_name::AbstractString
 
     initial_belief::Vector{Float64}
 
     #initial_belief::Vector{Float64} # belief over partially observed vars
 
-    function POMDPX(file_name::String; description::String="",
+    function POMDPX(file_name::AbstractString; description::AbstractString="",
                     initial_belief::Vector{Float64}=Float64[])
 
         if isempty(description)
@@ -42,18 +42,18 @@ type POMDPX <: AbstractPOMDPX
 end
 
 type MOMDPX <: AbstractPOMDPX
-    file_name::String
-    description::String
+    file_name::AbstractString
+    description::AbstractString
 
-    full_state_name::String
-    part_state_name::String
-    action_name::String
-    reward_name::String
-    obs_name::String
+    full_state_name::AbstractString
+    part_state_name::AbstractString
+    action_name::AbstractString
+    reward_name::AbstractString
+    obs_name::AbstractString
 
     initial_belief::Vector{Float64}
 
-    function MOMDPX(file_name::String; description::String="",
+    function MOMDPX(file_name::AbstractString; description::AbstractString="",
                     initial_belief::Vector{Float64}=Float64[])
 
         if isempty(description)

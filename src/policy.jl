@@ -23,7 +23,7 @@ type MOMDPAlphas <: Alphas
     end
 
     # Constructor reading policy from file
-    function MOMDPAlphas(filename::String)
+    function MOMDPAlphas(filename::AbstractString)
         alpha_vectors, alpha_actions, observable_states = read_momdp(filename)
         return new(alpha_vectors, alpha_actions, observable_states)
     end
@@ -49,7 +49,7 @@ type POMDPAlphas <: Alphas
     end
 
     # Constructor reading policy from file
-    function POMDPAlphas(filename::String)
+    function POMDPAlphas(filename::AbstractString)
         alpha_vectors, alpha_actions = read_pomdp(filename)
         return new(alpha_vectors, alpha_actions)
     end
