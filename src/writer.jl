@@ -173,8 +173,8 @@ function state_xml(pomdp::POMDP, pomdpx::MOMDPX)
     obs = ["true", "false"]
     xspace = fully_obs_space(pomdp)
     yspace = part_obs_space(pomdp)
-    xstates = domain(xspace)
-    ystates = domain(yspace)
+    xstates = iterator(xspace)
+    ystates = iterator(yspace)
     sizes = [length(collect(xstates)), length(collect(ystates))]
     str = ""
     for (var, o, size) in zip(vars, obs, sizes)
@@ -256,7 +256,7 @@ function belief_xml(pomdp::POMDP, pomdpx::POMDPX, out_file::IOStream)
     #if method_exists(initial_belief, (typeof(pomdp),))
         # check dimension matching
     #    yspace = states(pomdp)
-    #    ystates = domain(yspace)
+    #    ystates = iterator(yspace)
     #    @assert length(collect(ystates)) == length(belief)
 
 
@@ -267,7 +267,7 @@ function belief_xml(pomdp::POMDP, pomdpx::POMDPX, out_file::IOStream)
         str = "$(str)\t\t\t\t</Entry>\n"
     else
         yspace = states(pomdp)
-        ystates = domain(yspace)
+        ystates = iterator(yspace)
         @assert length(collect(ystates)) == length(belief)
         for (j, b) in enumerate(belief)
             str = "$(str)\t\t\t\t<Entry>\n"
@@ -307,7 +307,7 @@ function belief_xml(pomdp::POMDP, pomdpx::MOMDPX, out_file::IOStream)
                 str = "$(str)\t\t\t\t</Entry>\n"
             else
                 yspace = part_obs_space(pomdp)
-                ystates = domain(yspace)
+                ystates = iterator(yspace)
                 @assert length(collect(ystates)) == length(initial_belief)
                 for (j, b) in enumerate(initial_belief)
                     str = "$(str)\t\t\t\t<Entry>\n"
@@ -337,10 +337,10 @@ function trans_xml(pomdp::POMDP, pomdpx::MOMDPX, out_file::IOStream)
     yt = create_partially_obs_transition(pomdp)
     xspace = fully_obs_space(pomdp)
     yspace = part_obs_space(pomdp)
-    xstates = domain(xspace)
-    ystates = domain(yspace)
+    xstates = iterator(xspace)
+    ystates = iterator(yspace)
     aspace = actions(pomdp)
-    acts = domain(aspace)
+    acts = iterator(aspace)
 
     aname = pomdpx.action_name
     var1 = pomdpx.full_state_name
@@ -383,11 +383,11 @@ end
 function trans_xml(pomdp::POMDP, pomdpx::POMDPX, out_file::IOStream)
     d = create_transition_distribution(pomdp)
     sspace = states(pomdp)
-    pomdp_states = domain(sspace)
+    pomdp_states = iterator(sspace)
     spspace = states(pomdp)
-    pomdp_pstates = domain(spspace)
+    pomdp_pstates = iterator(spspace)
     aspace = actions(pomdp)
-    acts = domain(aspace)
+    acts = iterator(aspace)
 
     aname = pomdpx.action_name
     var = pomdpx.state_name
@@ -432,12 +432,12 @@ function obs_xml(pomdp::POMDP, pomdpx::MOMDPX, out_file::IOStream)
     d = create_observation_distribution(pomdp)
     xspace = fully_obs_space(pomdp)
     yspace = part_obs_space(pomdp)
-    xstates = domain(xspace)
-    ystates = domain(yspace)
+    xstates = iterator(xspace)
+    ystates = iterator(yspace)
     aspace = actions(pomdp)
-    acts = domain(aspace)
+    acts = iterator(aspace)
     ospace = observations(pomdp)
-    obs = domain(ospace)
+    obs = iterator(ospace)
 
     aname = pomdpx.action_name
     oname = pomdpx.obs_name
@@ -476,11 +476,11 @@ end
 function obs_xml(pomdp::POMDP, pomdpx::POMDPX, out_file::IOStream)
     d = create_observation_distribution(pomdp)
     sspace = states(pomdp)
-    pomdp_states = domain(sspace)
+    pomdp_states = iterator(sspace)
     aspace = actions(pomdp)
-    acts = domain(aspace)
+    acts = iterator(aspace)
     ospace = observations(pomdp)
-    obs = domain(ospace)
+    obs = iterator(ospace)
 
     aname = pomdpx.action_name
     oname = pomdpx.obs_name
@@ -524,10 +524,10 @@ end
 function reward_xml(pomdp::POMDP, pomdpx::MOMDPX, out_file::IOStream)
     xspace = fully_obs_space(pomdp)
     yspace = part_obs_space(pomdp)
-    xstates = domain(xspace)
-    ystates = domain(yspace)
+    xstates = iterator(xspace)
+    ystates = iterator(yspace)
     aspace = actions(pomdp)
-    acts = domain(aspace)
+    acts = iterator(aspace)
 
     aname = pomdpx.action_name
     var1 = pomdpx.full_state_name
@@ -559,7 +559,7 @@ function reward_xml(pomdp::POMDP, pomdpx::MOMDPX, out_file::IOStream)
 end
 function reward_xml(pomdp::POMDP, pomdpx::POMDPX, out_file::IOStream)
     sspace = states(pomdp)
-    pomdp_states = domain(sspace)
+    pomdp_states = iterator(sspace)
     aspace = actions(pomdp)
 
     aname = pomdpx.action_name
@@ -575,7 +575,7 @@ function reward_xml(pomdp::POMDP, pomdpx::POMDPX, out_file::IOStream)
 
     for (i, s) in enumerate(pomdp_states)
         actions(pomdp, s, aspace)
-        acts = domain(aspace)
+        acts = iterator(aspace)
         for (ai, a) in enumerate(acts)
             r = reward(pomdp, s, a) 
             str = "\t\t\t\t<Entry>\n"
