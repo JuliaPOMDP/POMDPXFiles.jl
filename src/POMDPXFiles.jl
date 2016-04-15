@@ -13,8 +13,8 @@ import LightXML: parse_file, root, get_elements_by_tagname, attribute, content
 
 export 
     AbstractPOMDPX,
-    POMDPX,
-    MOMDPX,
+    POMDPXFile,
+    MOMDPXFile,
     Alphas,
     POMDPAlphas,
     MOMDPAlphas,

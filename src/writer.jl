@@ -3,9 +3,9 @@
 # POMDPs.jl interface.
 #################################################################
 
-abstract AbstractPOMDPX 
+abstract AbstractPOMDPXFile
 
-type POMDPX <: AbstractPOMDPX
+type POMDPXFile <: AbstractPOMDPXFile
     file_name::AbstractString
     description::AbstractString
 
@@ -18,7 +18,7 @@ type POMDPX <: AbstractPOMDPX
 
     #initial_belief::Vector{Float64} # belief over partially observed vars
 
-    function POMDPX(file_name::AbstractString; description::AbstractString="",
+    function POMDPXFile(file_name::AbstractString; description::AbstractString="",
                     initial_belief::Vector{Float64}=Float64[])
 
         if isempty(description)
@@ -41,7 +41,7 @@ type POMDPX <: AbstractPOMDPX
 
 end
 
-type MOMDPX <: AbstractPOMDPX
+type MOMDPXFile <: AbstractPOMDPXFile
     file_name::AbstractString
     description::AbstractString
 
@@ -53,7 +53,7 @@ type MOMDPX <: AbstractPOMDPX
 
     initial_belief::Vector{Float64}
 
-    function MOMDPX(file_name::AbstractString; description::AbstractString="",
+    function MOMDPXFile(file_name::AbstractString; description::AbstractString="",
                     initial_belief::Vector{Float64}=Float64[])
 
         if isempty(description)
@@ -77,7 +77,7 @@ type MOMDPX <: AbstractPOMDPX
 end
 
 
-function Base.write(pomdp::POMDP, pomdpx::AbstractPOMDPX)
+function Base.write(pomdp::POMDP, pomdpx::AbstractPOMDPXFile)
     file_name = pomdpx.file_name 
     description = pomdpx.description
     discount_factor = discount(pomdp)
@@ -155,7 +155,7 @@ end
 # input: pomdp model, pomdpx type
 # output: string in xml format the defines the state varaibles
 ############################################################################
-function state_xml(pomdp::POMDP, pomdpx::POMDPX)
+function state_xml(pomdp::POMDP, pomdpx::POMDPXFile)
     # defines state vars for a POMDP
     n_s = n_states(pomdp)
     sname = pomdpx.state_name
@@ -164,7 +164,7 @@ function state_xml(pomdp::POMDP, pomdpx::POMDPX)
     str = "$(str)\t\t</StateVar>\n\n"
     return str
 end
-function state_xml(pomdp::POMDP, pomdpx::MOMDPX)
+function state_xml(pomdp::POMDP, pomdpx::MOMDPXFile)
     # defines state vars for a MOMDP
     var1 = pomdpx.full_state_name
     var2 = pomdpx.part_state_name
@@ -193,7 +193,7 @@ end
 # input: pomdp model, pomdpx type
 # output: string in xml format the defines the observation varaibles
 ############################################################################
-function obs_var_xml(pomdp::POMDP, pomdpx::AbstractPOMDPX)
+function obs_var_xml(pomdp::POMDP, pomdpx::AbstractPOMDPXFile)
     # defines observation vars for POMDP and MOMDP
     n_o = n_observations(pomdp)
     oname = pomdpx.obs_name
@@ -211,7 +211,7 @@ end
 # input: pomdp model, pomdpx type
 # output: string in xml format the defines the action varaibles
 ############################################################################
-function action_xml(pomdp::POMDP, pomdpx::AbstractPOMDPX)
+function action_xml(pomdp::POMDP, pomdpx::AbstractPOMDPXFile)
     # defines action vars for MDP, POMDP and MOMDP
     n_a = n_actions(pomdp)
     aname = pomdpx.action_name
@@ -229,7 +229,7 @@ end
 # input: pomdp model, pomdpx type
 # output: string in xml format the defines the reward varaible
 ############################################################################
-function reward_var_xml(pomdp::POMDP, pomdpx::AbstractPOMDPX)
+function reward_var_xml(pomdp::POMDP, pomdpx::AbstractPOMDPXFile)
     # defines reward var for MDP, POMDP and MOMDP
     rname = pomdpx.reward_name
     str = "\t\t<RewardVar vname=\"$(rname)\"/>\n\n"
@@ -244,7 +244,7 @@ end
 # input: pomdp model, pomdpx type, output file
 # output: None, writes the initial belief to the output file
 ############################################################################
-function belief_xml(pomdp::POMDP, pomdpx::POMDPX, out_file::IOStream)
+function belief_xml(pomdp::POMDP, pomdpx::POMDPXFile, out_file::IOStream)
     belief = pomdpx.initial_belief
     var = pomdpx.state_name
     write(out_file, "\t<InitialStateBelief>\n")
@@ -281,7 +281,7 @@ function belief_xml(pomdp::POMDP, pomdpx::POMDPX, out_file::IOStream)
     write(out_file, str)
     write(out_file, "\t</InitialStateBelief>\n\n\n") 
 end
-function belief_xml(pomdp::POMDP, pomdpx::MOMDPX, out_file::IOStream)
+function belief_xml(pomdp::POMDP, pomdpx::MOMDPXFile, out_file::IOStream)
     initial_belief = pomdpx.initial_belief
     var1 = pomdpx.full_state_name
     var2 = pomdpx.part_state_name
@@ -332,7 +332,7 @@ end
 # input: pomdp model, pomdpx type, output file
 # output: None, writes the transition probability table to the output file
 ############################################################################
-function trans_xml(pomdp::POMDP, pomdpx::MOMDPX, out_file::IOStream)
+function trans_xml(pomdp::POMDP, pomdpx::MOMDPXFile, out_file::IOStream)
     xt = create_fully_obs_transition(pomdp)
     yt = create_partially_obs_transition(pomdp)
     xspace = fully_obs_space(pomdp)
@@ -380,7 +380,7 @@ function trans_xml(pomdp::POMDP, pomdpx::MOMDPX, out_file::IOStream)
     write(out_file, "\t</StateTransitionFunction>\n\n\n")
     return nothing
 end
-function trans_xml(pomdp::POMDP, pomdpx::POMDPX, out_file::IOStream)
+function trans_xml(pomdp::POMDP, pomdpx::POMDPXFile, out_file::IOStream)
     d = create_transition_distribution(pomdp)
     sspace = states(pomdp)
     pomdp_states = iterator(sspace)
@@ -428,7 +428,7 @@ end
 # input: pomdp model, pomdpx type, output file
 # output: None, writes the observation probability table to the output file
 ############################################################################
-function obs_xml(pomdp::POMDP, pomdpx::MOMDPX, out_file::IOStream)
+function obs_xml(pomdp::POMDP, pomdpx::MOMDPXFile, out_file::IOStream)
     d = create_observation_distribution(pomdp)
     xspace = fully_obs_space(pomdp)
     yspace = part_obs_space(pomdp)
@@ -473,7 +473,7 @@ function obs_xml(pomdp::POMDP, pomdpx::MOMDPX, out_file::IOStream)
     write(out_file, "\t\t</CondProb>\n")
     write(out_file, "\t</ObsFunction>\n")
 end
-function obs_xml(pomdp::POMDP, pomdpx::POMDPX, out_file::IOStream)
+function obs_xml(pomdp::POMDP, pomdpx::POMDPXFile, out_file::IOStream)
     d = create_observation_distribution(pomdp)
     sspace = states(pomdp)
     pomdp_states = iterator(sspace)
@@ -521,7 +521,7 @@ end
 # input: pomdp model, pomdpx type, output file
 # output: None, writes the reward function to the output file
 ############################################################################
-function reward_xml(pomdp::POMDP, pomdpx::MOMDPX, out_file::IOStream)
+function reward_xml(pomdp::POMDP, pomdpx::MOMDPXFile, out_file::IOStream)
     xspace = fully_obs_space(pomdp)
     yspace = part_obs_space(pomdp)
     xstates = iterator(xspace)
@@ -557,7 +557,7 @@ function reward_xml(pomdp::POMDP, pomdpx::MOMDPX, out_file::IOStream)
     write(out_file, "\t\t\t</Parameter>\n\t\t</Func>\n")
     write(out_file, "\t</RewardFunction>\n\n")
 end
-function reward_xml(pomdp::POMDP, pomdpx::POMDPX, out_file::IOStream)
+function reward_xml(pomdp::POMDP, pomdpx::POMDPXFile, out_file::IOStream)
     sspace = states(pomdp)
     pomdp_states = iterator(sspace)
     aspace = actions(pomdp)
