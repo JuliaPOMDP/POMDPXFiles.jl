@@ -1,20 +1,20 @@
-# POMDPXFile
+# POMDPXFiles
 
-This module provides an interface for generating .pomdpx files that can be used with the [SARSOP.jl](https://github.com/sisl/SARSOP.jl). This module leverages the API defined in [POMDPs.jl](https://github.com/sisl/POMDPs.jl). 
+This module provides an interface for generating .pomdpx files that can be used with the [SARSOP.jl](https://github.com/JuliaPOMDP/SARSOP.jl). This module leverages the API defined in [POMDPs.jl](https://github.com/JuliaPOMDP/POMDPs.jl). 
 
 ## Installation
 
 ```julia
-Pkg.clone("https://github.com/sisl/POMDPXFile.jl")
+Pkg.clone("https://github.com/JuliaPOMDP/POMDPXFiles.jl")
 ```
 
 The module provides an interface for generating files for both POMDPs and MOMDPs. 
 
 ## Module Types
 
-- `AbstractPOMDPX`
-- `POMDPX`
-- `MOMDPX`
+- `AbstractPOMDPXFile`
+- `POMDPXFile`
+- `MOMDPXFile`
 
 
 ## Usage 
