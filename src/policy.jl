@@ -61,7 +61,8 @@ type POMDPAlphas <: Alphas
 end
 
 
-function action(policy::POMDPAlphas, b::Belief)
+#=
+function action{B}(policy::POMDPAlphas, b::B)
     vectors = policy.alpha_vectors
     actions = policy.alpha_actions
     utilities = prod(vectors, b) 
@@ -69,7 +70,7 @@ function action(policy::POMDPAlphas, b::Belief)
     return a
 end
 
-function value(policy::POMDPAlphas, b::Belief)
+function value{B}(policy::POMDPAlphas, b::B)
     vectors = policy.alpha_vectors
     actions = policy.alpha_actions
     utilities = prod(vectors, b) 
@@ -78,7 +79,7 @@ function value(policy::POMDPAlphas, b::Belief)
 end
 
 
-function action(policy::MOMDPAlphas, b::Belief, x::Int64)
+function action{B}(policy::MOMDPAlphas, b::B, x::Int64)
     vectors = policy.alpha_vectors
     actions = policy.alpha_actions
     states = policy.observable_states
@@ -89,7 +90,7 @@ function action(policy::MOMDPAlphas, b::Belief, x::Int64)
     return a
 end
 
-function value(policy::MOMDPAlphas, b::Belief, x::Int64)
+function value{B}(policy::MOMDPAlphas, b::B, x::Int64)
     vectors = policy.alpha_vectors
     actions = policy.alpha_actions
     states = policy.observable_states
@@ -100,7 +101,7 @@ function value(policy::MOMDPAlphas, b::Belief, x::Int64)
     return v
 end
 
-function prod(alphas::Matrix{Float64}, b::Belief)
+function prod{B}(alphas::Matrix{Float64}, b::B)
     @assert size(alphas, 1) == length(b) "Alpha and belief sizes not equal"
     n = size(alphas, 2)
     util = zeros(n)
@@ -114,4 +115,4 @@ function prod(alphas::Matrix{Float64}, b::Belief)
     return util
 end
 
-
+=#
