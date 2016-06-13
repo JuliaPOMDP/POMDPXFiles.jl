@@ -495,7 +495,7 @@ function obs_xml(pomdp::POMDP, pomdpx::POMDPXFile, out_file::IOStream)
 
     for (i, s) in enumerate(pomdp_states)
         for (ai, a) in enumerate(acts)
-            observation(pomdp, s, a, d)
+            d = observation(pomdp, a, s, d)
             for (oi, o) in enumerate(obs)
                 p = pdf(d, o)
                 if p > 0.0
