@@ -252,29 +252,21 @@ function belief_xml(pomdp::POMDP, pomdpx::POMDPXFile, out_file::IOStream)
     str = "$(str)\t\t\t<Var>$(var)0</Var>\n"
     str = "$(str)\t\t\t<Parent>null</Parent>\n"
     str = "$(str)\t\t\t<Parameter type = \"TBL\">\n"
-    # check if initial_belief method exists
-    #if method_exists(initial_belief, (typeof(pomdp),))
-        # check dimension matching
-    #    yspace = states(pomdp)
-    #    ystates = iterator(yspace)
-    #    @assert length(collect(ystates)) == length(belief)
 
-
-    if isempty(belief)
+    #if isempty(belief)
+    #    str = "$(str)\t\t\t\t<Entry>\n"
+    #    str = "$(str)\t\t\t\t\t<Instance>-</Instance>\n"
+    #    str = "$(str)\t\t\t\t\t<ProbTable>uniform</ProbTable>\n"
+    #    str = "$(str)\t\t\t\t</Entry>\n"
+    #else
+    sspace = states(pomdp)
+    d = initial_state_distribution(pomdp)
+    for (i, s) in enumerate(iterator(sspace))
+        p = pdf(d, s)
         str = "$(str)\t\t\t\t<Entry>\n"
-        str = "$(str)\t\t\t\t\t<Instance>-</Instance>\n"
-        str = "$(str)\t\t\t\t\t<ProbTable>uniform</ProbTable>\n"
+        str = "$(str)\t\t\t\t\t<Instance>s$(i-1)</Instance>\n"
+        str = "$(str)\t\t\t\t\t<ProbTable>$(p)</ProbTable>\n"
         str = "$(str)\t\t\t\t</Entry>\n"
-    else
-        yspace = states(pomdp)
-        ystates = iterator(yspace)
-        @assert length(collect(ystates)) == length(belief)
-        for (j, b) in enumerate(belief)
-            str = "$(str)\t\t\t\t<Entry>\n"
-            str = "$(str)\t\t\t\t\t<Instance>s$(j-1)</Instance>\n"
-            str = "$(str)\t\t\t\t\t<ProbTable>$(b)</ProbTable>\n"
-            str = "$(str)\t\t\t\t</Entry>\n"
-        end
     end
     str = "$(str)\t\t\t</Parameter>\n"
     str = "$(str)\t\t</CondProb>\n"
@@ -574,9 +566,7 @@ function reward_xml(pomdp::POMDP, pomdpx::POMDPXFile, out_file::IOStream)
     write(out_file, str)
 
     for (i, s) in enumerate(pomdp_states)
-        actions(pomdp, s, aspace)
-        acts = iterator(aspace)
-        for (ai, a) in enumerate(acts)
+        for (ai, a) in enumerate(iterator(aspace))
             r = reward(pomdp, s, a) 
             str = "\t\t\t\t<Entry>\n"
             str = "$(str)\t\t\t\t\t<Instance>a$(ai-1) s$(i-1)</Instance>\n"
