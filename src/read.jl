@@ -13,7 +13,7 @@
 # TODO: Handle sparse vectors
 #
 
-function read_momdp(filename::ASCIIString)
+function read_momdp(filename::String)
 
     # Parse the xml file
     # TODO: Check that the file exists and handle the case that it doesn't
@@ -66,7 +66,7 @@ function read_momdp(filename::ASCIIString)
 end
 
 
-function read_pomdp(filename::ASCIIString)
+function read_pomdp(filename::String)
 
     # Parse the xml file
     # TODO: Check that the file exists and handle the case that it doesn't
