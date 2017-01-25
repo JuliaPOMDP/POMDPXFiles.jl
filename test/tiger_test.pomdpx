@@ -34,8 +34,12 @@
 			<Parent>null</Parent>
 			<Parameter type = "TBL">
 				<Entry>
-					<Instance>-</Instance>
-					<ProbTable>uniform</ProbTable>
+					<Instance>s0</Instance>
+					<ProbTable>0.5</ProbTable>
+				</Entry>
+				<Entry>
+					<Instance>s1</Instance>
+					<ProbTable>0.5</ProbTable>
 				</Entry>
 			</Parameter>
 		</CondProb>

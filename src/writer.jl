@@ -373,7 +373,6 @@ function trans_xml(pomdp::POMDP, pomdpx::MOMDPXFile, out_file::IOStream)
     return nothing
 end
 function trans_xml(pomdp::POMDP, pomdpx::POMDPXFile, out_file::IOStream)
-    d = create_transition_distribution(pomdp)
     sspace = states(pomdp)
     pomdp_states = iterator(sspace)
     spspace = states(pomdp)
@@ -392,7 +391,7 @@ function trans_xml(pomdp::POMDP, pomdpx::POMDPXFile, out_file::IOStream)
     write(out_file, str)
     for (i, s) in enumerate(pomdp_states)
         for (ai, a) in enumerate(acts)
-            d = transition(pomdp, s, a, d)
+            d = transition(pomdp, s, a)
             for (j, sp) in enumerate(pomdp_pstates)
                 p = pdf(d, sp)
                 if p > 0.0
@@ -421,7 +420,6 @@ end
 # output: None, writes the observation probability table to the output file
 ############################################################################
 function obs_xml(pomdp::POMDP, pomdpx::MOMDPXFile, out_file::IOStream)
-    d = create_observation_distribution(pomdp)
     xspace = fully_obs_space(pomdp)
     yspace = part_obs_space(pomdp)
     xstates = iterator(xspace)
@@ -446,7 +444,7 @@ function obs_xml(pomdp::POMDP, pomdpx::MOMDPXFile, out_file::IOStream)
     for (i, x) in enumerate(xstates)
         for (j, y) in enumerate(ystates)
             for (ai, a) in enumerate(acts)
-                d = observation(pomdp, x, y, a, d)
+                d = observation(pomdp, x, y, a)
                 for (k, o) in enumerate(obs)
                     p = pdf(d, o)
                     if p > 0.0
@@ -466,7 +464,6 @@ function obs_xml(pomdp::POMDP, pomdpx::MOMDPXFile, out_file::IOStream)
     write(out_file, "\t</ObsFunction>\n")
 end
 function obs_xml(pomdp::POMDP, pomdpx::POMDPXFile, out_file::IOStream)
-    d = create_observation_distribution(pomdp)
     sspace = states(pomdp)
     pomdp_states = iterator(sspace)
     aspace = actions(pomdp)
@@ -487,7 +484,7 @@ function obs_xml(pomdp::POMDP, pomdpx::POMDPXFile, out_file::IOStream)
 
     for (i, s) in enumerate(pomdp_states)
         for (ai, a) in enumerate(acts)
-            d = observation(pomdp, a, s, d)
+            d = observation(pomdp, a, s)
             for (oi, o) in enumerate(obs)
                 p = pdf(d, o)
                 if p > 0.0
