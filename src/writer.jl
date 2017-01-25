@@ -259,9 +259,8 @@ function belief_xml(pomdp::POMDP, pomdpx::POMDPXFile, out_file::IOStream)
     #    str = "$(str)\t\t\t\t\t<ProbTable>uniform</ProbTable>\n"
     #    str = "$(str)\t\t\t\t</Entry>\n"
     #else
-    sspace = states(pomdp)
     d = initial_state_distribution(pomdp)
-    for (i, s) in enumerate(iterator(sspace))
+    for (i, s) in enumerate(ordered_states(pomdp))
         p = pdf(d, s)
         str = "$(str)\t\t\t\t<Entry>\n"
         str = "$(str)\t\t\t\t\t<Instance>s$(i-1)</Instance>\n"
@@ -331,8 +330,7 @@ function trans_xml(pomdp::POMDP, pomdpx::MOMDPXFile, out_file::IOStream)
     yspace = part_obs_space(pomdp)
     xstates = iterator(xspace)
     ystates = iterator(yspace)
-    aspace = actions(pomdp)
-    acts = iterator(aspace)
+    acts = iterator(actions(pomdp))
 
     aname = pomdpx.action_name
     var1 = pomdpx.full_state_name
@@ -351,7 +349,7 @@ function trans_xml(pomdp::POMDP, pomdpx::MOMDPXFile, out_file::IOStream)
         for (i, x) in enumerate(xstates)
             for (j, y) in enumerate(ystates)
                 for (ai, a) in enumerate(acts)
-                    d = transition(pomdp, x, y, a, d)
+                    d = transition(pomdp, x, y, a)
                     for (k, sp) in enumerate(space)
                         p = pdf(d, sp)
                         if p > 0.0
@@ -373,12 +371,9 @@ function trans_xml(pomdp::POMDP, pomdpx::MOMDPXFile, out_file::IOStream)
     return nothing
 end
 function trans_xml(pomdp::POMDP, pomdpx::POMDPXFile, out_file::IOStream)
-    sspace = states(pomdp)
-    pomdp_states = iterator(sspace)
-    spspace = states(pomdp)
-    pomdp_pstates = iterator(spspace)
-    aspace = actions(pomdp)
-    acts = iterator(aspace)
+    pomdp_states = ordered_states(pomdp) 
+    pomdp_pstates = ordered_states(pomdp)
+    acts = ordered_actions(pomdp)
 
     aname = pomdpx.action_name
     var = pomdpx.state_name
@@ -464,12 +459,9 @@ function obs_xml(pomdp::POMDP, pomdpx::MOMDPXFile, out_file::IOStream)
     write(out_file, "\t</ObsFunction>\n")
 end
 function obs_xml(pomdp::POMDP, pomdpx::POMDPXFile, out_file::IOStream)
-    sspace = states(pomdp)
-    pomdp_states = iterator(sspace)
-    aspace = actions(pomdp)
-    acts = iterator(aspace)
-    ospace = observations(pomdp)
-    obs = iterator(ospace)
+    pomdp_states = ordered_states(pomdp)
+    acts = ordered_actions(pomdp)
+    obs = ordered_observations(pomdp)
 
     aname = pomdpx.action_name
     oname = pomdpx.obs_name
@@ -547,9 +539,8 @@ function reward_xml(pomdp::POMDP, pomdpx::MOMDPXFile, out_file::IOStream)
     write(out_file, "\t</RewardFunction>\n\n")
 end
 function reward_xml(pomdp::POMDP, pomdpx::POMDPXFile, out_file::IOStream)
-    sspace = states(pomdp)
-    pomdp_states = iterator(sspace)
-    aspace = actions(pomdp)
+    pomdp_states = ordered_states(pomdp)
+    acts = ordered_actions(pomdp)
 
     aname = pomdpx.action_name
     var = pomdpx.state_name
@@ -563,7 +554,7 @@ function reward_xml(pomdp::POMDP, pomdpx::POMDPXFile, out_file::IOStream)
     write(out_file, str)
 
     for (i, s) in enumerate(pomdp_states)
-        for (ai, a) in enumerate(iterator(aspace))
+        for (ai, a) in enumerate(acts)
             r = reward(pomdp, s, a) 
             str = "\t\t\t\t<Entry>\n"
             str = "$(str)\t\t\t\t\t<Instance>a$(ai-1) s$(i-1)</Instance>\n"
