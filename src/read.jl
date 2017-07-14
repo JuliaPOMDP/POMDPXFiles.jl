@@ -38,12 +38,12 @@ function read_momdp(filename::String)
 
     num_vectors_check = length(vector_tags) + length(sparsevector_tags)         # should be same as num_vectors
 
-    # Initialize the gamma matrix. This is basically a matrix with the alpha 
+    # Initialize the gamma matrix. This is basically a matrix with the alpha
     #   vectors as rows.
     #alpha_vectors = Array(Float64, num_vectors, vector_length)
-    alpha_vectors = Array(Float64, vector_length, num_vectors)
-    alpha_actions = Array(String, num_vectors)
-    observable_states = Array(String, num_vectors)
+    alpha_vectors = Array{Float64}(vector_length, num_vectors)
+    alpha_actions = Array{String}(num_vectors)
+    observable_states = Array{String}(num_vectors)
     gammarow = 1
 
     # Fill in gamma
@@ -91,12 +91,12 @@ function read_pomdp(filename::String)
 
     num_vectors_check = length(vector_tags) + length(sparsevector_tags)         # should be same as num_vectors
 
-    # Initialize the gamma matrix. This is basically a matrix with the alpha 
+    # Initialize the gamma matrix. This is basically a matrix with the alpha
     #   vectors as columns.
     #alpha_vectors = Array(Float64, num_vectors, vector_length)
-    alpha_vectors = Array(Float64, vector_length, num_vectors)
-    alpha_actions = Array(String, num_vectors)
-    observable_states = Array(String, num_vectors)
+    alpha_vectors = Array{Float64}(vector_length, num_vectors)
+    alpha_actions = Array{String}(num_vectors)
+    observable_states = Array{String}(num_vectors)
     gammarow = 1
 
     # Fill in gamma

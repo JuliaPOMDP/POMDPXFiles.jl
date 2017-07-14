@@ -1,10 +1,10 @@
 # this is taken from Louis Dressel's POMDPs.jl. Thanks Louis!
 
 # Abstract Type representing alpha vectors
-abstract Alphas
+abstract type Alphas end
 
 # MOMDP alpha vectors are associated with a fully observable state variabel
-type MOMDPAlphas <: Alphas
+mutable struct MOMDPAlphas <: Alphas
 
     alpha_vectors::Matrix{Float64}
     alpha_actions::Vector{Int64}
@@ -34,7 +34,7 @@ type MOMDPAlphas <: Alphas
     end
 end
 
-type POMDPAlphas <: Alphas
+mutable struct POMDPAlphas <: Alphas
     alpha_vectors::Matrix{Float64}
     alpha_actions::Vector{Int64}
 
@@ -65,7 +65,7 @@ end
 function action{B}(policy::POMDPAlphas, b::B)
     vectors = policy.alpha_vectors
     actions = policy.alpha_actions
-    utilities = prod(vectors, b) 
+    utilities = prod(vectors, b)
     a = actions[indmax(utilities)] + 1
     return a
 end
@@ -73,7 +73,7 @@ end
 function value{B}(policy::POMDPAlphas, b::B)
     vectors = policy.alpha_vectors
     actions = policy.alpha_actions
-    utilities = prod(vectors, b) 
+    utilities = prod(vectors, b)
     v =  maximum(utilities)
     return v
 end
@@ -84,7 +84,7 @@ function action{B}(policy::MOMDPAlphas, b::B, x::Int64)
     actions = policy.alpha_actions
     states = policy.observable_states
     o = x - 1 # julia obs: 1-100, sarsop obs: 0-99
-    utilities = prod(vectors, b) 
+    utilities = prod(vectors, b)
     chunk = actions[find(s -> s == o, states)]
     a = chunk[indmax(utilities[find(s -> s == o, states)])] + 1
     return a
@@ -94,8 +94,8 @@ function value{B}(policy::MOMDPAlphas, b::B, x::Int64)
     vectors = policy.alpha_vectors
     actions = policy.alpha_actions
     states = policy.observable_states
-    o = x - 1 # 1 indexing in julia 
-    utilities = prod(vectors, b) 
+    o = x - 1 # 1 indexing in julia
+    utilities = prod(vectors, b)
     chunk = actions[find(s -> s == o, states)]
     v =  maximum(utilities[find(s -> s == o, states)])
     return v
