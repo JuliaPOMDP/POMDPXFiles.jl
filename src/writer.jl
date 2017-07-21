@@ -3,9 +3,9 @@
 # POMDPs.jl interface.
 #################################################################
 
-abstract AbstractPOMDPXFile
+abstract type AbstractPOMDPXFile end
 
-type POMDPXFile <: AbstractPOMDPXFile
+mutable struct POMDPXFile <: AbstractPOMDPXFile
     file_name::AbstractString
     description::AbstractString
 
@@ -41,7 +41,7 @@ type POMDPXFile <: AbstractPOMDPXFile
 
 end
 
-type MOMDPXFile <: AbstractPOMDPXFile
+mutable struct MOMDPXFile <: AbstractPOMDPXFile
     file_name::AbstractString
     description::AbstractString
 
@@ -78,7 +78,7 @@ end
 
 
 function Base.write(pomdp::POMDP, pomdpx::AbstractPOMDPXFile)
-    file_name = pomdpx.file_name 
+    file_name = pomdpx.file_name
     description = pomdpx.description
     discount_factor = discount(pomdp)
 
@@ -87,8 +87,8 @@ function Base.write(pomdp::POMDP, pomdpx::AbstractPOMDPXFile)
 
     # Header stuff for xml
     write(out_file, "<?xml version='1.0' encoding='ISO-8859-1'?>\n\n\n")
-    write(out_file, "<pomdpx version='0.1' id='test' ") 
-    write(out_file, "xmlns:='http://www.w3.org/2001/XMLSchema-instance' ") 
+    write(out_file, "<pomdpx version='0.1' id='test' ")
+    write(out_file, "xmlns:='http://www.w3.org/2001/XMLSchema-instance' ")
     write(out_file, "xsi:noNamespaceSchemaLocation='pomdpx.xsd'>\n\n\n")
 
     ############################################################################
@@ -108,7 +108,7 @@ function Base.write(pomdp::POMDP, pomdpx::AbstractPOMDPXFile)
     # State Variables
     str = state_xml(pomdp, pomdpx)
     write(out_file, str)
-    # Action Variables 
+    # Action Variables
     str = action_xml(pomdp, pomdpx)
     write(out_file, str)
     # Observation Variables
@@ -198,7 +198,7 @@ function obs_var_xml(pomdp::POMDP, pomdpx::AbstractPOMDPXFile)
     n_o = n_observations(pomdp)
     oname = pomdpx.obs_name
     str = "\t\t<ObsVar vname=\"$(oname)\">\n"
-    str = "$(str)\t\t\t<NumValues>$(n_o)</NumValues>\n" 
+    str = "$(str)\t\t\t<NumValues>$(n_o)</NumValues>\n"
     str = "$(str)\t\t</ObsVar>\n\n"
     return str
 end
@@ -216,7 +216,7 @@ function action_xml(pomdp::POMDP, pomdpx::AbstractPOMDPXFile)
     n_a = n_actions(pomdp)
     aname = pomdpx.action_name
     str = "\t\t<ActionVar vname=\"$(aname)\">\n"
-    str = "$(str)\t\t\t<NumValues>$(n_a)</NumValues>\n" 
+    str = "$(str)\t\t\t<NumValues>$(n_a)</NumValues>\n"
     str = "$(str)\t\t</ActionVar>\n\n"
     return str
 end
@@ -270,7 +270,7 @@ function belief_xml(pomdp::POMDP, pomdpx::POMDPXFile, out_file::IOStream)
     str = "$(str)\t\t\t</Parameter>\n"
     str = "$(str)\t\t</CondProb>\n"
     write(out_file, str)
-    write(out_file, "\t</InitialStateBelief>\n\n\n") 
+    write(out_file, "\t</InitialStateBelief>\n\n\n")
 end
 function belief_xml(pomdp::POMDP, pomdpx::MOMDPXFile, out_file::IOStream)
     initial_belief = pomdpx.initial_belief
@@ -312,7 +312,7 @@ function belief_xml(pomdp::POMDP, pomdpx::MOMDPXFile, out_file::IOStream)
         str = "$(str)\t\t</CondProb>\n"
         write(out_file, str)
     end
-    write(out_file, "\t</InitialStateBelief>\n\n\n") 
+    write(out_file, "\t</InitialStateBelief>\n\n\n")
 end
 ############################################################################
 
@@ -371,7 +371,7 @@ function trans_xml(pomdp::POMDP, pomdpx::MOMDPXFile, out_file::IOStream)
     return nothing
 end
 function trans_xml(pomdp::POMDP, pomdpx::POMDPXFile, out_file::IOStream)
-    pomdp_states = ordered_states(pomdp) 
+    pomdp_states = ordered_states(pomdp)
     pomdp_pstates = ordered_states(pomdp)
     acts = ordered_actions(pomdp)
 
@@ -525,7 +525,7 @@ function reward_xml(pomdp::POMDP, pomdpx::MOMDPXFile, out_file::IOStream)
     for (i, x) in enumerate(xstates)
         for (j, y) in enumerate(ystates)
             for (ai, a) in enumerate(acts)
-                r = reward(pomdp, x, y, a) 
+                r = reward(pomdp, x, y, a)
                 str = "\t\t\t\t<Entry>\n"
                 str = "$(str)\t\t\t\t\t<Instance>a$(ai-1) s$(i-1) s$(j-1)</Instance>\n"
                 str = "$(str)\t\t\t\t\t<ValueTable>$(r)</ValueTable>\n"
@@ -555,7 +555,7 @@ function reward_xml(pomdp::POMDP, pomdpx::POMDPXFile, out_file::IOStream)
 
     for (i, s) in enumerate(pomdp_states)
         for (ai, a) in enumerate(acts)
-            r = reward(pomdp, s, a) 
+            r = reward(pomdp, s, a)
             str = "\t\t\t\t<Entry>\n"
             str = "$(str)\t\t\t\t\t<Instance>a$(ai-1) s$(i-1)</Instance>\n"
             str = "$(str)\t\t\t\t\t<ValueTable>$(r)</ValueTable>\n"
