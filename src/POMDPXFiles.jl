@@ -11,9 +11,9 @@ end
 # import o avoid naming conflict in POMDPs.jl (value is overloaded in LightXML)
 import LightXML: parse_file, root, get_elements_by_tagname, attribute, content
 
-using POMDPToolbox
+using POMDPToolbox, ProgressMeter
 
-export 
+export
     AbstractPOMDPXFile,
     POMDPXFile,
     MOMDPXFile,
