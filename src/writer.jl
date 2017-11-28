@@ -260,7 +260,7 @@ function belief_xml(pomdp::POMDP, pomdpx::POMDPXFile, out_file::IOStream)
     #    str = "$(str)\t\t\t\t</Entry>\n"
     #else
     d = initial_state_distribution(pomdp)
-    @showprogress "Writing initial belief..." for (i, s) in enumerate(ordered_states(pomdp))
+    for (i, s) in enumerate(ordered_states(pomdp))
         p = pdf(d, s)
         str = "$(str)\t\t\t\t<Entry>\n"
         str = "$(str)\t\t\t\t\t<Instance>s$(i-1)</Instance>\n"
@@ -384,7 +384,7 @@ function trans_xml(pomdp::POMDP, pomdpx::POMDPXFile, out_file::IOStream)
     str = "$(str)\t\t\t<Parent>$(aname) $(var)0</Parent>\n"
     str = "$(str)\t\t\t<Parameter>\n"
     write(out_file, str)
-    @showprogress "Writing transition probabilities ... " for (i, s) in enumerate(pomdp_states)
+    for (i, s) in enumerate(pomdp_states)
         for (ai, a) in enumerate(acts)
             d = transition(pomdp, s, a)
             for (j, sp) in enumerate(pomdp_pstates)
@@ -474,7 +474,7 @@ function obs_xml(pomdp::POMDP, pomdpx::POMDPXFile, out_file::IOStream)
     str = "$(str)\t\t\t<Parameter>\n"
     write(out_file, str)
 
-    @showprogress "Writing observation probabilities..." for (i, s) in enumerate(pomdp_states)
+    for (i, s) in enumerate(pomdp_states)
         for (ai, a) in enumerate(acts)
             d = observation(pomdp, a, s)
             for (oi, o) in enumerate(obs)
@@ -553,7 +553,7 @@ function reward_xml(pomdp::POMDP, pomdpx::POMDPXFile, out_file::IOStream)
     str = "$(str)\t\t\t<Parameter>\n"
     write(out_file, str)
 
-    @showprogress "Writing rewards ..." for (i, s) in enumerate(pomdp_states)
+    for (i, s) in enumerate(pomdp_states)
         for (ai, a) in enumerate(acts)
             r = reward(pomdp, s, a)
             str = "\t\t\t\t<Entry>\n"
