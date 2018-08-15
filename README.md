@@ -27,3 +27,7 @@ pomdpx = MOMDPX("my_pomdp.pomdpx") # for momdp
 write(pomdp, pomdpx) # creates a pomdpx file called my_pomdp.pomdpx
 ```
 
+## MOMDPs (Depricated)
+
+While MOMDPs are no longer officially supported, you can look at how they were handled in an older version of POMDPs.jl
+in [this branch](https://github.com/altiscope/prototype/blob/develop/scenarios/memos/2/analysis.json) 
