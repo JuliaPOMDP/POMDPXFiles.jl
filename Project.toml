@@ -1,0 +1,13 @@
+name = "POMDPXFiles"
+uuid = "c6f6ee83-58c6-5336-a19f-2c76817e1af6"
+repo = "https://github.com/JuliaPOMDP/POMDPXFiles.jl"
+
+[deps]
+LightXML = "9c8b4983-aa76-5018-a973-4c85ecc9e179"
+POMDPs = "a93abf59-7444-517b-a68a-c42f96afdd7d"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
