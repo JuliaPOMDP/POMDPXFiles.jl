@@ -1,6 +1,6 @@
 using POMDPXFiles
 using POMDPModels
-using Base.Test
+using Test
 
 # write your own tests here
 
