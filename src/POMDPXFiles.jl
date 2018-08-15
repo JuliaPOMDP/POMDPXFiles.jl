@@ -1,12 +1,12 @@
 module POMDPXFiles
 
-#if isdir(Pkg.dir("MOMDPs"))
-#    using MOMDPs
-#    import MOMDPs: action, value
-#else
-#    using POMDPs
-#    import POMDPs: action, value
-#end
+if isdir(Pkg.dir("MOMDPs"))
+    using MOMDPs
+    import MOMDPs: action, value
+else
+    using POMDPs
+    import POMDPs: action, value
+end
 using POMDPs
 import POMDPs: action, value
 
@@ -21,9 +21,9 @@ export
     MOMDPXFile,
     Alphas,
     POMDPAlphas,
-    # MOMDPAlphas,
+    MOMDPAlphas,
 
-    # read_momdp,
+    read_momdp,
     read_pomdp,
     action,
     value
