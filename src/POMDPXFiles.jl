@@ -1,12 +1,14 @@
 module POMDPXFiles
 
-if isdir(Pkg.dir("MOMDPs"))
-    using MOMDPs
-    import MOMDPs: action, value
-else
-    using POMDPs
-    import POMDPs: action, value
-end
+#if isdir(Pkg.dir("MOMDPs"))
+#    using MOMDPs
+#    import MOMDPs: action, value
+#else
+#    using POMDPs
+#    import POMDPs: action, value
+#end
+using POMDPs
+import POMDPs: action, value
 
 # import o avoid naming conflict in POMDPs.jl (value is overloaded in LightXML)
 import LightXML: parse_file, root, get_elements_by_tagname, attribute, content
@@ -19,9 +21,9 @@ export
     MOMDPXFile,
     Alphas,
     POMDPAlphas,
-    MOMDPAlphas,
+    # MOMDPAlphas,
 
-    read_momdp,
+    # read_momdp,
     read_pomdp,
     action,
     value

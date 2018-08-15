@@ -4,35 +4,35 @@
 abstract type Alphas end
 
 # MOMDP alpha vectors are associated with a fully observable state variabel
-mutable struct MOMDPAlphas <: Alphas
+# mutable struct MOMDPAlphas <: Alphas
 
-    alpha_vectors::Matrix{Float64}
-    alpha_actions::Vector{Int64}
-    observable_states::Vector{Int64}
+#     alpha_vectors::Matrix{Float64}
+#     alpha_actions::Vector{Int64}
+#     observable_states::Vector{Int64}
 
-    MOMDPAlphas(av::Matrix{Float64}, aa::Vector{Int64}, os::Vector{Int64}) = new(av, aa, os)
+#     MOMDPAlphas(av::Matrix{Float64}, aa::Vector{Int64}, os::Vector{Int64}) = new(av, aa, os)
 
-    # Constructor if no action list is given
-    # Here, we 0-index actions, to match sarsop output
-    function MOMDPAlphas(av::Matrix{Float64})
-        # TODO: this is broken, actions and observations need to be obtained from pomdp
-        numActions = size(av, 1)
-        alist = [0:(numActions-1)]
-        ostates = [0:(numActions-1)]
-        return new(av, alist, ostates)
-    end
+#     # Constructor if no action list is given
+#     # Here, we 0-index actions, to match sarsop output
+#     function MOMDPAlphas(av::Matrix{Float64})
+#         # TODO: this is broken, actions and observations need to be obtained from pomdp
+#         numActions = size(av, 1)
+#         alist = [0:(numActions-1)]
+#         ostates = [0:(numActions-1)]
+#         return new(av, alist, ostates)
+#     end
 
-    # Constructor reading policy from file
-    function MOMDPAlphas(filename::AbstractString)
-        alpha_vectors, alpha_actions, observable_states = read_momdp(filename)
-        return new(alpha_vectors, alpha_actions, observable_states)
-    end
+#     # Constructor reading policy from file
+#     function MOMDPAlphas(filename::AbstractString)
+#         alpha_vectors, alpha_actions, observable_states = read_momdp(filename)
+#         return new(alpha_vectors, alpha_actions, observable_states)
+#     end
 
-    # Default constructor
-    function MOMDPAlphas()
-        return new(zeros(0,0), zeros(Int64,0), zeros(Int64,0))
-    end
-end
+#     # Default constructor
+#     function MOMDPAlphas()
+#         return new(zeros(0,0), zeros(Int64,0), zeros(Int64,0))
+#     end
+# end
 
 mutable struct POMDPAlphas <: Alphas
     alpha_vectors::Matrix{Float64}
