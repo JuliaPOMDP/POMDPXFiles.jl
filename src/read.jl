@@ -94,14 +94,14 @@ function read_pomdp(filename::String)
     # Initialize the gamma matrix. This is basically a matrix with the alpha
     #   vectors as columns.
     #alpha_vectors = Array(Float64, num_vectors, vector_length)
-    alpha_vectors = Array{Float64}(vector_length, num_vectors)
-    alpha_actions = Array{String}(num_vectors)
-    observable_states = Array{String}(num_vectors)
+    alpha_vectors = Array{Float64}(undef, vector_length, num_vectors)
+    alpha_actions = Array{String}(undef, num_vectors)
+    observable_states = Array{String}(undef, num_vectors)
     gammarow = 1
 
     # Fill in gamma
     for vector in vector_tags
-        alpha = float(split(content(vector)))
+        alpha = parse.(Float64, split(content(vector)))
         #alpha_vectors[gammarow, :] = alpha
         alpha_vectors[:,gammarow] = alpha
         alpha_actions[gammarow] = attribute(vector, "action")

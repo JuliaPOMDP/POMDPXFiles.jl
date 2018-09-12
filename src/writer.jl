@@ -198,7 +198,7 @@ function belief_xml(pomdp::POMDP, pomdpx::POMDPXFile, out_file::IOStream)
     str = "$(str)\t\t\t<Parent>null</Parent>\n"
     str = "$(str)\t\t\t<Parameter type = \"TBL\">\n"
 
-    d = initial_state_distribution(pomdp)
+    d = initialstate_distribution(pomdp)
     for (i, s) in enumerate(ordered_states(pomdp))
         p = pdf(d, s)
         str = "$(str)\t\t\t\t<Entry>\n"
