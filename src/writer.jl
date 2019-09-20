@@ -122,7 +122,7 @@ end
 ############################################################################
 function state_xml(pomdp::POMDP, pomdpx::POMDPXFile)
     # defines state vars for a POMDP
-    n_s = n_states(pomdp)
+    n_s = length(states(pomdp))
     sname = pomdpx.state_name
     str = "\t\t<StateVar vnamePrev=\"$(sname)0\" vnameCurr=\"$(sname)1\" fullyObs=\"false\">\n"
     str = "$(str)\t\t\t<NumValues>$(n_s)</NumValues>\n"
@@ -140,7 +140,7 @@ end
 ############################################################################
 function obs_var_xml(pomdp::POMDP, pomdpx::AbstractPOMDPXFile)
     # defines observation vars for POMDP and MOMDP
-    n_o = n_observations(pomdp)
+    n_o = length(observations(pomdp))
     oname = pomdpx.obs_name
     str = "\t\t<ObsVar vname=\"$(oname)\">\n"
     str = "$(str)\t\t\t<NumValues>$(n_o)</NumValues>\n"
@@ -158,7 +158,7 @@ end
 ############################################################################
 function action_xml(pomdp::POMDP, pomdpx::AbstractPOMDPXFile)
     # defines action vars for MDP, POMDP and MOMDP
-    n_a = n_actions(pomdp)
+    n_a = length(actions(pomdp))
     aname = pomdpx.action_name
     str = "\t\t<ActionVar vname=\"$(aname)\">\n"
     str = "$(str)\t\t\t<NumValues>$(n_a)</NumValues>\n"
