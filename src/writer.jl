@@ -311,6 +311,7 @@ end
 function reward_xml(pomdp::POMDP, pomdpx::POMDPXFile, out_file::IOStream)
     pomdp_states = ordered_states(pomdp)
     acts = ordered_actions(pomdp)
+    rew = StateActionReward(pomdp)
 
     aname = pomdpx.action_name
     var = pomdpx.state_name
@@ -325,7 +326,7 @@ function reward_xml(pomdp::POMDP, pomdpx::POMDPXFile, out_file::IOStream)
 
     for (i, s) in enumerate(pomdp_states)
         for (ai, a) in enumerate(acts)
-            r = reward(pomdp, s, a)
+            r = rew(s, a)
             str = "\t\t\t\t<Entry>\n"
             str = "$(str)\t\t\t\t\t<Instance>a$(ai-1) s$(i-1)</Instance>\n"
             str = "$(str)\t\t\t\t\t<ValueTable>$(r)</ValueTable>\n"
