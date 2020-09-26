@@ -235,16 +235,24 @@ function trans_xml(pomdp::POMDP, pomdpx::POMDPXFile, out_file::IOStream)
     str = "$(str)\t\t\t<Parameter>\n"
     write(out_file, str)
     for (i, s) in enumerate(pomdp_states)
-        for (ai, a) in enumerate(acts)
-            d = transition(pomdp, s, a)
-            for (j, sp) in enumerate(pomdp_pstates)
-                p = pdf(d, sp)
-                if p > 0.0
-                    str = "\t\t\t\t<Entry>\n"
-                    str = "$(str)\t\t\t\t\t<Instance>a$(ai-1) s$(i-1) s$(j-1)</Instance>\n"
-                    str = "$(str)\t\t\t\t\t<ProbTable>$(p)</ProbTable>\n"
-                    str = "$(str)\t\t\t\t</Entry>\n"
-                    write(out_file, str)
+        if isterminal(pomdp, s) # if terminal, just remain in the same state
+            str = "\t\t\t\t<Entry>\n"
+            str = "$(str)\t\t\t\t\t<Instance>* s$(i-1) s$(i-1)</Instance>\n"
+            str = "$(str)\t\t\t\t\t<ProbTable>1.0</ProbTable>\n"
+            str = "$(str)\t\t\t\t</Entry>\n"
+            write(out_file, str)
+        else
+            for (ai, a) in enumerate(acts)
+                d = transition(pomdp, s, a)
+                for (j, sp) in enumerate(pomdp_pstates)
+                    p = pdf(d, sp)
+                    if p > 0.0
+                        str = "\t\t\t\t<Entry>\n"
+                        str = "$(str)\t\t\t\t\t<Instance>a$(ai-1) s$(i-1) s$(j-1)</Instance>\n"
+                        str = "$(str)\t\t\t\t\t<ProbTable>$(p)</ProbTable>\n"
+                        str = "$(str)\t\t\t\t</Entry>\n"
+                        write(out_file, str)
+                    end
                 end
             end
         end
@@ -325,13 +333,15 @@ function reward_xml(pomdp::POMDP, pomdpx::POMDPXFile, out_file::IOStream)
     write(out_file, str)
 
     for (i, s) in enumerate(pomdp_states)
-        for (ai, a) in enumerate(acts)
-            r = rew(s, a)
-            str = "\t\t\t\t<Entry>\n"
-            str = "$(str)\t\t\t\t\t<Instance>a$(ai-1) s$(i-1)</Instance>\n"
-            str = "$(str)\t\t\t\t\t<ValueTable>$(r)</ValueTable>\n"
-            str = "$(str)\t\t\t\t</Entry>\n"
-            write(out_file, str)
+        if !isterminal(pomdp, s)
+            for (ai, a) in enumerate(acts)
+                r = rew(s, a)
+                str = "\t\t\t\t<Entry>\n"
+                str = "$(str)\t\t\t\t\t<Instance>a$(ai-1) s$(i-1)</Instance>\n"
+                str = "$(str)\t\t\t\t\t<ValueTable>$(r)</ValueTable>\n"
+                str = "$(str)\t\t\t\t</Entry>\n"
+                write(out_file, str)
+            end
         end
     end
 
