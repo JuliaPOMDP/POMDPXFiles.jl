@@ -293,9 +293,10 @@ function obs_xml(pomdp::POMDP, pomdpx::POMDPXFile, out_file::IOStream)
         if ex isa MethodError
             @warn("""POMDPXFiles only supports observation distributions conditioned on a and sp.
 
-                  Make sure there is an `observation(::M, ::A, ::S)` method available.
+                  Check that there is an `observation(::M, ::A, ::S)` method available (or an (::A, ::S) method of the observation function for a QuickPOMDP).
                   
-                  QuickPOMDPs users must implement consistent (a::A, sp::S) and (s::S, a::A, sp::S) methods of the observation function. The easist way to do this is to have the (s, a, sp) version call the (a, sp) version.""", M=typeof(pomdp), S=typeof(first(pomdp_states)), A=typeof(first(acts)))
+                  This warning is designed to give a helpful hint to fix errors, but may not always be relevant.
+                  """, M=typeof(pomdp), S=typeof(first(pomdp_states)), A=typeof(first(acts)))
         end
         rethrow(ex)
     end
