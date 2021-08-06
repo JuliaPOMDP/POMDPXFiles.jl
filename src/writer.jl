@@ -288,6 +288,19 @@ function obs_xml(pomdp::POMDP, pomdpx::POMDPXFile, out_file::IOStream)
     str = "$(str)\t\t\t<Parameter>\n"
     write(out_file, str)
 
+    try observation(pomdp, first(acts), first(pomdp_states))
+    catch ex
+        if ex isa MethodError
+            @warn("""POMDPXFiles only supports observation distributions conditioned on a and sp.
+
+                  Check that there is an `observation(::M, ::A, ::S)` method available (or an (::A, ::S) method of the observation function for a QuickPOMDP).
+                  
+                  This warning is designed to give a helpful hint to fix errors, but may not always be relevant.
+                  """, M=typeof(pomdp), S=typeof(first(pomdp_states)), A=typeof(first(acts)))
+        end
+        rethrow(ex)
+    end
+
     for (i, s) in enumerate(pomdp_states)
         for (ai, a) in enumerate(acts)
             d = observation(pomdp, a, s)
