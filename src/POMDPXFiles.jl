@@ -1,14 +1,14 @@
 module POMDPXFiles
 
 using POMDPs
-using POMDPModelTools
+using POMDPTools
 import POMDPs: action, value
 
 # import o avoid naming conflict in POMDPs.jl (value is overloaded in LightXML)
 import LightXML: parse_file, root, get_elements_by_tagname, attribute, content
 
 
-export 
+export
     AbstractPOMDPXFile,
     POMDPXFile,
     MOMDPXFile,
