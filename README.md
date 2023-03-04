@@ -5,7 +5,7 @@ This module provides an interface for generating .pomdpx files that can be used 
 ## Installation
 
 ```julia
-Pkg.clone("https://github.com/JuliaPOMDP/POMDPXFiles.jl")
+Pkg.add("POMDPXFiles")
 ```
 
 The module provides an interface for generating files for both POMDPs and MOMDPs. 
