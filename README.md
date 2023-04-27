@@ -1,5 +1,8 @@
 # POMDPXFiles
 
+[![Build Status](https://github.com/JuliaPOMDP/POMDPXFiles.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/JuliaPOMDP/POMDPXFiles.jl/actions/workflows/CI.yml/)
+[![codecov](https://codecov.io/gh/JuliaPOMDP/POMDPXFiles.jl/branch/master/graph/badge.svg?token=14YwrQvwbp)](https://codecov.io/gh/JuliaPOMDP/POMDPXFiles.jl)
+
 This module provides an interface for generating .pomdpx files that can be used with the [SARSOP.jl](https://github.com/JuliaPOMDP/SARSOP.jl). This module leverages the API defined in [POMDPs.jl](https://github.com/JuliaPOMDP/POMDPs.jl). 
 
 ## Installation
@@ -15,7 +18,6 @@ The module provides an interface for generating files for both POMDPs and MOMDPs
 - `AbstractPOMDPXFile`
 - `POMDPXFile`
 - `MOMDPXFile`
-
 
 ## Usage 
 Make sure that your model is defined according to the API in POMDPs.jl.
