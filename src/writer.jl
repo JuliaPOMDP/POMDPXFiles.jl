@@ -50,12 +50,23 @@ function Base.write(pomdp::POMDP, pomdpx::AbstractPOMDPXFile)
     # Open file to write to
     out_file = open("$file_name", "w")
 
+    # p1 = ProgressUnknown("Progress so far: ")
+    pomdp_states = ordered_states(pomdp)
+    pomdp_pstates = ordered_states(pomdp)
+    acts = ordered_actions(pomdp)
+    obs = ordered_observations(pomdp)
+    # p1 = Progress(7+7)
+    x = 14 + length(pomdp_states) + length(pomdp_states)*length(acts)*length(obs) + length(pomdp_states)*length(acts) + length(acts)*length(pomdp_pstates)
+    p1 = Progress(x, dt=0.01)
+
     # Header stuff for xml
     write(out_file, "<?xml version='1.0' encoding='ISO-8859-1'?>\n\n\n")
     write(out_file, "<pomdpx version='0.1' id='test' ")
     write(out_file, "xmlns:='http://www.w3.org/2001/XMLSchema-instance' ")
     write(out_file, "xsi:noNamespaceSchemaLocation='pomdpx.xsd'>\n\n\n")
 
+    sleep(0.01)
+    next!(p1)
     ############################################################################
     # DESCRIPTION
     ############################################################################
@@ -70,43 +81,47 @@ function Base.write(pomdp::POMDP, pomdpx::AbstractPOMDPXFile)
     # VARIABLES
     ############################################################################
     write(out_file, "\t<Variable>\n")
+    next!(p1)
     # State Variables
     str = state_xml(pomdp, pomdpx)
     write(out_file, str)
+    next!(p1)
     # Action Variables
     str = action_xml(pomdp, pomdpx)
     write(out_file, str)
+    next!(p1)
     # Observation Variables
     str = obs_var_xml(pomdp, pomdpx)
     write(out_file, str)
+    next!(p1)
     # Reward Variable
     str = reward_var_xml(pomdp, pomdpx)
     write(out_file, str)
     write(out_file, "\t</Variable>\n\n\n")
 
-
+    next!(p1)
     ############################################################################
     # INITIAL STATE BELIEF
     ############################################################################
-    belief_xml(pomdp, pomdpx, out_file)
+    belief_xml(pomdp, pomdpx, out_file, p1)
 
 
     ############################################################################
     # STATE TRANSITION FUNCTION
     ############################################################################
-    trans_xml(pomdp, pomdpx, out_file)
+    trans_xml(pomdp, pomdpx, out_file, p1)
 
 
     ############################################################################
     # OBS FUNCTION
     ############################################################################
-    obs_xml(pomdp, pomdpx, out_file)
+    obs_xml(pomdp, pomdpx, out_file, p1)
 
 
     ############################################################################
     # REWARD FUNCTION
     ############################################################################
-    reward_xml(pomdp, pomdpx, out_file)
+    reward_xml(pomdp, pomdpx, out_file, p1)
 
 
     # CLOSE POMDPX TAG AND FILE
@@ -189,7 +204,7 @@ end
 # input: pomdp model, pomdpx type, output file
 # output: None, writes the initial belief to the output file
 ############################################################################
-function belief_xml(pomdp::POMDP, pomdpx::POMDPXFile, out_file::IOStream)
+function belief_xml(pomdp::POMDP, pomdpx::POMDPXFile, out_file::IOStream, p1)
     belief = pomdpx.initial_belief
     var = pomdpx.state_name
     write(out_file, "\t<InitialStateBelief>\n")
@@ -197,6 +212,7 @@ function belief_xml(pomdp::POMDP, pomdpx::POMDPXFile, out_file::IOStream)
     str = "$(str)\t\t\t<Var>$(var)0</Var>\n"
     str = "$(str)\t\t\t<Parent>null</Parent>\n"
     str = "$(str)\t\t\t<Parameter type = \"TBL\">\n"
+    next!(p1)
 
     d = initialstate(pomdp)
     for (i, s) in enumerate(ordered_states(pomdp))
@@ -205,11 +221,13 @@ function belief_xml(pomdp::POMDP, pomdpx::POMDPXFile, out_file::IOStream)
         str = "$(str)\t\t\t\t\t<Instance>s$(i-1)</Instance>\n"
         str = "$(str)\t\t\t\t\t<ProbTable>$(p)</ProbTable>\n"
         str = "$(str)\t\t\t\t</Entry>\n"
+        next!(p1)
     end
     str = "$(str)\t\t\t</Parameter>\n"
     str = "$(str)\t\t</CondProb>\n"
     write(out_file, str)
     write(out_file, "\t</InitialStateBelief>\n\n\n")
+    next!(p1)
 end
 ############################################################################
 
@@ -220,7 +238,7 @@ end
 # input: pomdp model, pomdpx type, output file
 # output: None, writes the transition probability table to the output file
 ############################################################################
-function trans_xml(pomdp::POMDP, pomdpx::POMDPXFile, out_file::IOStream)
+function trans_xml(pomdp::POMDP, pomdpx::POMDPXFile, out_file::IOStream, p1)
     pomdp_states = ordered_states(pomdp)
     pomdp_pstates = ordered_states(pomdp)
     acts = ordered_actions(pomdp)
@@ -234,6 +252,7 @@ function trans_xml(pomdp::POMDP, pomdpx::POMDPXFile, out_file::IOStream)
     str = "$(str)\t\t\t<Parent>$(aname) $(var)0</Parent>\n"
     str = "$(str)\t\t\t<Parameter>\n"
     write(out_file, str)
+    next!(p1)
     for (i, s) in enumerate(pomdp_states)
         if isterminal(pomdp, s) # if terminal, just remain in the same state
             str = "\t\t\t\t<Entry>\n"
@@ -241,6 +260,9 @@ function trans_xml(pomdp::POMDP, pomdpx::POMDPXFile, out_file::IOStream)
             str = "$(str)\t\t\t\t\t<ProbTable>1.0</ProbTable>\n"
             str = "$(str)\t\t\t\t</Entry>\n"
             write(out_file, str)
+            for i = 1:length(acts)*length(pomdp_pstates)
+                next!(p1)
+            end
         else
             for (ai, a) in enumerate(acts)
                 d = transition(pomdp, s, a)
@@ -253,6 +275,7 @@ function trans_xml(pomdp::POMDP, pomdpx::POMDPXFile, out_file::IOStream)
                         str = "$(str)\t\t\t\t</Entry>\n"
                         write(out_file, str)
                     end
+                    next!(p1)
                 end
             end
         end
@@ -261,6 +284,7 @@ function trans_xml(pomdp::POMDP, pomdpx::POMDPXFile, out_file::IOStream)
     str = "$(str)\t\t</CondProb>\n"
     write(out_file, str)
     write(out_file, "\t</StateTransitionFunction>\n\n\n")
+    next!(p1)
     return nothing
 end
 ############################################################################
@@ -272,7 +296,7 @@ end
 # input: pomdp model, pomdpx type, output file
 # output: None, writes the observation probability table to the output file
 ############################################################################
-function obs_xml(pomdp::POMDP, pomdpx::POMDPXFile, out_file::IOStream)
+function obs_xml(pomdp::POMDP, pomdpx::POMDPXFile, out_file::IOStream, p1)
     pomdp_states = ordered_states(pomdp)
     acts = ordered_actions(pomdp)
     obs = ordered_observations(pomdp)
@@ -287,6 +311,7 @@ function obs_xml(pomdp::POMDP, pomdpx::POMDPXFile, out_file::IOStream)
     str = "$(str)\t\t\t<Parent>$(aname) $(var)1</Parent>\n"
     str = "$(str)\t\t\t<Parameter>\n"
     write(out_file, str)
+    next!(p1)
 
     try observation(pomdp, first(acts), first(pomdp_states))
     catch ex
@@ -313,12 +338,14 @@ function obs_xml(pomdp::POMDP, pomdpx::POMDPXFile, out_file::IOStream)
                     str = "$(str)\t\t\t\t</Entry>\n"
                     write(out_file, str)
                 end
+                next!(p1)
             end
         end
     end
     write(out_file, "\t\t\t</Parameter>\n")
     write(out_file, "\t\t</CondProb>\n")
     write(out_file, "\t</ObsFunction>\n")
+    next!(p1)
 end
 ############################################################################
 
@@ -329,7 +356,7 @@ end
 # input: pomdp model, pomdpx type, output file
 # output: None, writes the reward function to the output file
 ############################################################################
-function reward_xml(pomdp::POMDP, pomdpx::POMDPXFile, out_file::IOStream)
+function reward_xml(pomdp::POMDP, pomdpx::POMDPXFile, out_file::IOStream, p1)
     pomdp_states = ordered_states(pomdp)
     acts = ordered_actions(pomdp)
     rew = StateActionReward(pomdp)
@@ -344,6 +371,7 @@ function reward_xml(pomdp::POMDP, pomdpx::POMDPXFile, out_file::IOStream)
     str = "$(str)\t\t\t<Parent>$(aname) $(var)0</Parent>\n"
     str = "$(str)\t\t\t<Parameter>\n"
     write(out_file, str)
+    next!(p1)
 
     for (i, s) in enumerate(pomdp_states)
         if !isterminal(pomdp, s)
@@ -354,11 +382,17 @@ function reward_xml(pomdp::POMDP, pomdpx::POMDPXFile, out_file::IOStream)
                 str = "$(str)\t\t\t\t\t<ValueTable>$(r)</ValueTable>\n"
                 str = "$(str)\t\t\t\t</Entry>\n"
                 write(out_file, str)
+                next!(p1)
+            end
+        else
+            for i = 1:length(acts)
+                next!(p1)
             end
         end
     end
 
     write(out_file, "\t\t\t</Parameter>\n\t\t</Func>\n")
     write(out_file, "\t</RewardFunction>\n\n")
+    next!(p1)
 end
 ############################################################################

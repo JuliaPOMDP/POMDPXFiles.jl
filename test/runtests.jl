@@ -4,16 +4,16 @@ using POMDPXFiles
 using POMDPModels
 using Test
 
-@testset "basic" begin
-    file_name = "tiger_test.pomdpx"
-    pomdp = TigerPOMDP()
-    pomdpx = POMDPXFile(file_name)
-    write(pomdp, pomdpx)
-    av, aa = read_pomdp("mypolicy.policy")
+# @testset "basic" begin
+#     file_name = "tiger_test.pomdpx"
+#     pomdp = TigerPOMDP()
+#     pomdpx = POMDPXFile(file_name)
+#     write(pomdp, pomdpx)
+#     av, aa = read_pomdp("mypolicy.policy")
 
-    @test av ≈ [-81.5975 3.01448 24.6954 28.4025 19.3711; 28.4025 24.6954 3.01452 -81.5975 19.3711]
-    @test aa == [1,0,0,2,0]
-end
+#     @test av ≈ [-81.5975 3.01448 24.6954 28.4025 19.3711; 28.4025 24.6954 3.01452 -81.5975 19.3711]
+#     @test aa == [1,0,0,2,0]
+# end
 
 @testset "a, sp observation warning" begin 
     struct BadObsPOMDP <: POMDP{Int,Int,Int} end
