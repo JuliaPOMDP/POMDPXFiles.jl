@@ -50,12 +50,10 @@ function Base.write(pomdp::POMDP, pomdpx::AbstractPOMDPXFile)
     # Open file to write to
     out_file = open("$file_name", "w")
 
-    # p1 = ProgressUnknown("Progress so far: ")
     pomdp_states = ordered_states(pomdp)
     pomdp_pstates = ordered_states(pomdp)
     acts = ordered_actions(pomdp)
     obs = ordered_observations(pomdp)
-    # p1 = Progress(7+7)
     x = 14 + length(pomdp_states) + length(pomdp_states)*length(acts)*length(obs) + length(pomdp_states)*length(acts) + length(acts)*length(pomdp_pstates)
     p1 = Progress(x, dt=0.01)
 
