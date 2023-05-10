@@ -54,6 +54,8 @@ function Base.write(pomdp::POMDP, pomdpx::AbstractPOMDPXFile)
     pomdp_pstates = ordered_states(pomdp)
     acts = ordered_actions(pomdp)
     obs = ordered_observations(pomdp)
+    # x = Number of next statement to track Progress
+    # Added approximately after every four lines written to file, 14 next statements outside loops 
     x = 14 + length(pomdp_states) + length(pomdp_states)*length(acts)*length(obs) + length(pomdp_states)*length(acts) + length(acts)*length(pomdp_pstates)
     p1 = Progress(x, dt=0.01)
 
