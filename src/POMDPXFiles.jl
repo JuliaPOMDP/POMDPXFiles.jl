@@ -2,6 +2,7 @@ module POMDPXFiles
 
 using POMDPs
 using POMDPTools
+using ProgressMeter
 import POMDPs: action, value
 
 # import o avoid naming conflict in POMDPs.jl (value is overloaded in LightXML)
