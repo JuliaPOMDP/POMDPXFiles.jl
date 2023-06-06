@@ -12,9 +12,12 @@ abstract type AbstractPOMDPXFile end
     pretty::Bool = false
 end
 
+POMDPXFile(filename::String, pretty::Bool) = POMDPXFile(; filename=filename, pretty=pretty)
+POMDPXFile(filename::String) = POMDPXFile(filename, false)
+
 a_name( px::POMDPXFile) = px.action_name
-s_name( px::POMDPXFile) = px.state_name
-sp_name(px::POMDPXFile) = px.state_name * "p"
+s_name( px::POMDPXFile) = "$(px.state_name)0"
+sp_name(px::POMDPXFile) = "$(px.state_name)1"
 o_name( px::POMDPXFile) = px.obs_name
 r_name( px::POMDPXFile) = px.reward_name
 
@@ -69,21 +72,20 @@ function build_variables!(root::Node, p::POMDP, px::POMDPXFile, pbar)
     link!(variables, reward_node)
     next!(pbar)
 
-    if !px.pretty
+    if px.pretty
+        all_states = join(["s_$(string(s))" for s=ordered_states(p)], " ")
+        addelement!(states_node, "ValueEnum", all_states)
+
+        all_actions = join(["a_$(string(a))" for a=ordered_actions(p)], " ")
+        addelement!(actions_node, "ValueEnum", all_actions)
+
+        all_observations = join(["o_$(string(o))" for o=ordered_observations(p)], " ")
+        addelement!(obs_node, "ValueEnum", all_observations)
+    else
         addelement!(states_node, "NumValues", "$(length(states(p)))")
         addelement!(actions_node, "NumValues", "$(length(actions(p)))")
         addelement!(obs_node, "NumValues", "$(length(observations(p)))")
-        return
     end
-
-    all_states = join(["s_$(s)" for s=ordered_states(p)], " ")
-    addelement!(states_node, "ValueEnum", all_states)
-
-    all_actions = join(["a_$(a)" for a=ordered_actions(p)], " ")
-    addelement!(actions_node, "ValueEnum", all_actions)
-
-    all_observations = join(["o_$(o)" for o=ordered_observations(p)], " ")
-    addelement!(obs_node, "ValueEnum", all_observations)
 end
 
 function param(label::String; prob::Real = -1, value::Real = -Inf)
@@ -115,8 +117,12 @@ function build_initial_beliefs(root::Node, p::POMDP, px::POMDPXFile, pbar)
 
     init_states = initialstate(p)
     for s in states(p)
-        sidx = stateindex(p, s)
-        label = px.pretty ? "s_$(s)" : "s$(sidx)"
+        if px.pretty
+            label = "s_$(string(s))"
+        else
+            label = "s$(stateindex(p, s))"
+        end
+
         link!(parameter, param(label; prob=pdf(init_states, s)))
         next!(pbar)
     end
@@ -137,20 +143,29 @@ function build_transitions!(root::Node, p::POMDP, px::POMDPXFile, pbar)
     next!(pbar)
 
     for s=states(p)
-        sidx = stateindex(p, s)
         if isterminal(p, s)
-            label = px.pretty ? "* s_$(s) s_$(s)" : "* s$(sidx) s$(sidx)"
+            if px.pretty
+                label = "* s_$(string(s)) s_$(string(s))"
+            else
+                label = "* s$(stateindex(p, s)) s$(stateindex(p, s))"
+            end
+
             link!(parameter, param(label; prob=1.0))
             for _=1:(length(actions(p)) * length(states(p)))
                 next!(pbar)
             end
+
             continue
         end
 
         for a=actions(p), sp=states(p)
+            if px.pretty
+                label = "a_$(string(a)) s_$(string(s)) s_$(string(sp))"
+            else
+                label = "a$(actionindex(p, a)) s$(stateindex(p, s)) s$(stateindex(p, sp))"
+            end
+
             T = transition(p, s, a)
-            (aidx, spidx) = actionindex(p, a), stateindex(p, sp)
-            label = px.pretty ? "a_$(a) s_$(s) s_$(sp)" : "a$(aidx) s$(sidx) s$(spidx)"
             if pdf(T, sp) > 0.0
                 link!(parameter, param(label; prob=pdf(T, sp)))
             end
@@ -187,10 +202,13 @@ function build_observations!(root::Node, p::POMDP, px::POMDPXFile, pbar)
     end
 
     for a=actions(p), sp=states(p), o=observations(p)
-        O = observation(p, a, sp)
-        (aidx, spidx, oidx) = (actionindex(p, a), stateindex(p, sp), obsindex(p, o))
-        label = px.pretty ? "a_$(a) s_$(sp) o_$(o)" : "a$(aidx) s$(spidx) o$(oidx)"
+        if px.pretty
+            label = "a_$(string(a)) s_$(string(sp)) o_$(string(o))"
+        else
+            label = "a$(actionindex(p, a)) s$(stateindex(p, sp)) o$(obsindex(p, o))"
+        end
 
+        O = observation(p, a, sp)
         if pdf(O, o) > 0.
             link!(parameter, param(label; prob=pdf(O, o)))
         end
@@ -214,8 +232,11 @@ function build_rewards!(root::Node, p::POMDP, px::POMDPXFile, pbar)
 
     reward_fn = StateActionReward(p)
     for a=actions(p), s=states(p)
-        (aidx, sidx) = (actionindex(p, a), stateindex(p, s))
-        label= px.pretty ? "a_$(a) s_$(s)" : "a$(aidx) s$(sidx)"
+        if px.pretty
+            label = "a_$(string(a)) s_$(string(s))"
+        else
+            label = "a$(actionindex(p, a)) s$(stateindex(p, s))"
+        end
 
         if !isterminal(p, s)
             link!(parameter, param(label; value=reward_fn(s, a)))
