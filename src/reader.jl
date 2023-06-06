@@ -25,11 +25,11 @@ function read_pomdp(filename::String)
         push!(alphavectors, parse.(Float64, split(nodecontent(vector))))
         push!(alphaactions, vector["action"])
     end
-    alphavectors = mapreduce(permutedims, vcat, alphavectors)
+    alphavectors = transpose(mapreduce(permutedims, vcat, alphavectors))
 
     n_vectors  = parse(Int, av_node["numVectors"])
     vector_len = parse(Int, av_node["vectorLength"])
-    @assert size(alphavectors) == (n_vectors, vector_len)
+    @assert size(alphavectors) == (vector_len, n_vectors)
 
     # TODO handle sparsevectors
     sparsevectors = findall("SparseVector", av_node)

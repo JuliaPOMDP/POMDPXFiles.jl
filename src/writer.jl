@@ -1,14 +1,3 @@
-#!/usr/bin/env julia
-using POMDPs
-using POMDPTools
-using ProgressMeter
-import POMDPs: action, value
-using POMDPModels
-using EzXML
-import EzXML: Node, XMLDocument, ElementNode, addelement!, link!, write
-using Parameters
-using ProgressMeter
-
 abstract type AbstractPOMDPXFile end
 
 @with_kw struct POMDPXFile <: AbstractPOMDPXFile
@@ -45,7 +34,7 @@ function build_xml(p::POMDP, px::POMDPXFile)
     setroot!(doc, root)
 
     addelement!(root, "Description", px.description)
-    addelement!(root, "Discount", "$(discount(pomdp))")
+    addelement!(root, "Discount", "$(discount(p))")
     next!(pbar)
 
     build_variables!(root, p, px, pbar)
@@ -57,7 +46,7 @@ function build_xml(p::POMDP, px::POMDPXFile)
     return doc
 end
 
-function build_variables!(root::EzXML.Node, p::POMDP, px::POMDPXFile, pbar)
+function build_variables!(root::Node, p::POMDP, px::POMDPXFile, pbar)
     variables = ElementNode("Variable")
     link!(root, variables)
 
@@ -81,9 +70,9 @@ function build_variables!(root::EzXML.Node, p::POMDP, px::POMDPXFile, pbar)
     next!(pbar)
 
     if !px.pretty
-        addelement!(states_node, "NumValues", "$(length(states(px.pomdp)))")
-        addelement!(actions_node, "NumValues", "$(length(actions(px.pomdp)))")
-        addelement!(obs_node, "NumValues", "$(length(observations(px.pomdp)))")
+        addelement!(states_node, "NumValues", "$(length(states(p)))")
+        addelement!(actions_node, "NumValues", "$(length(actions(p)))")
+        addelement!(obs_node, "NumValues", "$(length(observations(p)))")
         return
     end
 
@@ -109,7 +98,7 @@ function param(label::String; prob::Real = -1, value::Real = -Inf)
     return entry
 end
 
-function build_initial_beliefs(root::EzXML.Node, p::POMDP, px::POMDPXFile, pbar)
+function build_initial_beliefs(root::Node, p::POMDP, px::POMDPXFile, pbar)
     ibstate = ElementNode("InitialStateBelief")
     link!(root, ibstate)
 
@@ -124,15 +113,16 @@ function build_initial_beliefs(root::EzXML.Node, p::POMDP, px::POMDPXFile, pbar)
     link!(condprob, parameter)
     next!(pbar)
 
-    for (prob, s) in initialstate(p)
+    init_states = initialstate(p)
+    for s in states(p)
         sidx = stateindex(p, s)
         label = px.pretty ? "s_$(s)" : "s$(sidx)"
-        link!(parameter, param(label; prob=prob))
+        link!(parameter, param(label; prob=pdf(init_states, s)))
         next!(pbar)
     end
 end
 
-function build_transitions!(root::EzXML.Node, p::POMDP, px::POMDPXFile, pbar)
+function build_transitions!(root::Node, p::POMDP, px::POMDPXFile, pbar)
     statetrans = ElementNode("StateTransitionFunction")
     link!(root, statetrans)
 
@@ -169,7 +159,7 @@ function build_transitions!(root::EzXML.Node, p::POMDP, px::POMDPXFile, pbar)
     end
 end
 
-function build_observations!(root::EzXML.Node, p::POMDP, px::POMDPXFile, pbar)
+function build_observations!(root::Node, p::POMDP, px::POMDPXFile, pbar)
     obsfun = ElementNode("ObsFunction")
     link!(root, obsfun)
 
@@ -208,7 +198,7 @@ function build_observations!(root::EzXML.Node, p::POMDP, px::POMDPXFile, pbar)
     end
 end
 
-function build_rewards!(root::EzXML.Node, p::POMDP, px::POMDPXFile, pbar)
+function build_rewards!(root::Node, p::POMDP, px::POMDPXFile, pbar)
     rewardfunc = ElementNode("RewardFunction")
     link!(root, rewardfunc)
 
@@ -222,12 +212,13 @@ function build_rewards!(root::EzXML.Node, p::POMDP, px::POMDPXFile, pbar)
     link!(func, parameter)
     next!(pbar)
 
+    reward_fn = StateActionReward(p)
     for a=actions(p), s=states(p)
         (aidx, sidx) = (actionindex(p, a), stateindex(p, s))
         label= px.pretty ? "a_$(a) s_$(s)" : "a$(aidx) s$(sidx)"
 
         if !isterminal(p, s)
-            link!(parameter, param(label; value=reward(p, s, a)))
+            link!(parameter, param(label; value=reward_fn(s, a)))
         end
         next!(pbar)
     end

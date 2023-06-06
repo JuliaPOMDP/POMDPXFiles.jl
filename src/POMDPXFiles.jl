@@ -3,8 +3,9 @@ module POMDPXFiles
 using POMDPs
 using POMDPTools
 using ProgressMeter
+using Parameters
 
-import EzXML: Node, XMLDocument, ElementNode, addelement!, link!, write, readxml, root, findfirst, findall, nodecontent
+import EzXML: Node, XMLDocument, ElementNode, addelement!, link!, write, readxml, root, findfirst, findall, nodecontent, setroot!, prettyprint
 
 export
     AbstractPOMDPXFile,
@@ -13,7 +14,6 @@ export
     POMDPAlphas,
 
     read_pomdp
-
 
 include("writer.jl")
 include("policy.jl")
