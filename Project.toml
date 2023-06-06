@@ -4,13 +4,13 @@ repo = "https://github.com/JuliaPOMDP/POMDPXFiles.jl"
 version = "0.2.4"
 
 [deps]
-LightXML = "9c8b4983-aa76-5018-a973-4c85ecc9e179"
+EzXML = "8f5d6c58-4d21-5cfd-889c-e3ad7ee6a615"
 POMDPTools = "7588e00f-9cae-40de-98dc-e0c70c48cdd7"
 POMDPs = "a93abf59-7444-517b-a68a-c42f96afdd7d"
+Parameters = "d96e819e-fc66-5662-9728-84c9c7592b0a"
 ProgressMeter = "92933f4c-e287-5a05-a399-4b506db050ca"
 
 [compat]
-LightXML = "0.9"
 POMDPTools = "0.1"
 POMDPs = "0.7.3, 0.8, 0.9"
 julia = "1"
