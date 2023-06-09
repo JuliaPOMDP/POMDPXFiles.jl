@@ -45,10 +45,10 @@ function build_xml(p::POMDP, px::POMDPXFile)
     next!(pbar)
 
     build_variables!(root, p, px, pbar)
-    build_initial_beliefs(root, p, px, sname, pbar)
-    build_transitions!(root, p, px, sname, aname, pbar)
-    build_observations!(root, p, px, sname, aname, oname, pbar)
-    build_rewards!(root, p, px, sname, aname, pbar)
+    build_initial_beliefs(root, p, px, pbar)
+    build_transitions!(root, p, px, pbar)
+    build_observations!(root, p, px, pbar)
+    build_rewards!(root, p, px, pbar)
 
     return doc
 end
