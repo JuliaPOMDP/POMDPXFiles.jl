@@ -124,7 +124,8 @@ function build_initial_beliefs(root::Node, p::POMDP, px::POMDPXFile, pbar)
         if px.pretty
             label = "s_$(px.s_name(s))"
         else
-            label = "s$(stateindex(p, s))"
+            sidx = stateindex(p, s)
+            label = "s$(sidx - 1)"
         end
 
         link!(parameter, param(label; prob=pdf(init_states, s)))
@@ -151,7 +152,8 @@ function build_transitions!(root::Node, p::POMDP, px::POMDPXFile, pbar)
             if px.pretty
                 label = "* s_$(px.s_name(s)) s_$(px.s_name(s))"
             else
-                label = "* s$(stateindex(p, s)) s$(stateindex(p, s))"
+                sidx = stateindex(p, s)
+                label = "* s$(sidx - 1) s$(sidx - 1)"
             end
 
             link!(parameter, param(label; prob=1.0))
@@ -166,7 +168,8 @@ function build_transitions!(root::Node, p::POMDP, px::POMDPXFile, pbar)
             if px.pretty
                 label = "a_$(px.a_name(a)) s_$(px.s_name(s)) s_$(px.s_name(sp))"
             else
-                label = "a$(actionindex(p, a)) s$(stateindex(p, s)) s$(stateindex(p, sp))"
+                (aidx, sidx, spidx) = (actionindex(p, a), stateindex(p, sp), stateindex(p, sp))
+                label = "a$(aidx - 1) s$(sidx - 1) s$(spidx - 1)"
             end
 
             T = transition(p, s, a)
@@ -209,7 +212,8 @@ function build_observations!(root::Node, p::POMDP, px::POMDPXFile, pbar)
         if px.pretty
             label = "a_$(px.a_name(a)) s_$(px.s_name(sp)) o_$(px.o_name(o))"
         else
-            label = "a$(actionindex(p, a)) s$(stateindex(p, sp)) o$(obsindex(p, o))"
+            (aidx, spidx, oidx) = (actionindex(p, a), stateindex(p, sp), obsindex(p, o))
+            label = "a$(aidx - 1) s$(spidx - 1) o$(oidx - 1)"
         end
 
         O = observation(p, a, sp)
@@ -239,7 +243,8 @@ function build_rewards!(root::Node, p::POMDP, px::POMDPXFile, pbar)
         if px.pretty
             label = "a_$(px.a_name(a)) s_$(px.s_name(s))"
         else
-            label = "a$(actionindex(p, a)) s$(stateindex(p, s))"
+            (aidx, sidx) = (actionindex(p, a), stateindex(p, s))
+            label = "a$(aidx - 1) s$(sidx - 1)"
         end
 
         if !isterminal(p, s)
