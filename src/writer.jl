@@ -19,11 +19,11 @@ end
 POMDPXFile(filename::String, pretty::Bool) = POMDPXFile(; filename=filename, pretty=pretty)
 POMDPXFile(filename::String) = POMDPXFile(filename, false)
 
-a_var_name( px::POMDPXFile) = px.action_var_name
-s_var_name( px::POMDPXFile) = "$(px.state_var_name)0"
-sp_var_name(px::POMDPXFile) = "$(px.state_var_name)1"
-o_var_name( px::POMDPXFile) = px.obs_var_name
-r_var_name( px::POMDPXFile) = px.reward_var_name
+a_var_name( px::POMDPXFile) = px.a_var_name
+s_var_name( px::POMDPXFile) = "$(px.s_var_name)0"
+sp_var_name(px::POMDPXFile) = "$(px.s_var_name)1"
+o_var_name( px::POMDPXFile) = px.o_var_name
+r_var_name( px::POMDPXFile) = px.r_var_name
 
 function build_xml(p::POMDP, px::POMDPXFile)
     n_states = length(states(p))
