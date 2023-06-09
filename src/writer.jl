@@ -147,6 +147,8 @@ function build_transitions!(root::Node, p::POMDP, px::POMDPXFile, pbar)
     link!(condprob, parameter)
     next!(pbar)
 
+    link!(parameter, param("* * *"; prob=0.0))
+
     for s=states(p)
         if isterminal(p, s)
             if px.pretty
@@ -173,9 +175,7 @@ function build_transitions!(root::Node, p::POMDP, px::POMDPXFile, pbar)
             end
 
             T = transition(p, s, a)
-            if pdf(T, sp) > 0.0
-                link!(parameter, param(label; prob=pdf(T, sp)))
-            end
+            link!(parameter, param(label; prob=pdf(T, sp)))
             next!(pbar)
         end
     end
@@ -194,6 +194,8 @@ function build_observations!(root::Node, p::POMDP, px::POMDPXFile, pbar)
     parameter = ElementNode("Parameter")
     link!(condprob, parameter)
     next!(pbar)
+
+    link!(parameter, param("* * *"; prob=0.0))
 
     try observation(p, first(actions(p)), first(states(p)))
     catch ex
@@ -217,9 +219,7 @@ function build_observations!(root::Node, p::POMDP, px::POMDPXFile, pbar)
         end
 
         O = observation(p, a, sp)
-        if pdf(O, o) > 0.
-            link!(parameter, param(label; prob=pdf(O, o)))
-        end
+        link!(parameter, param(label; prob=pdf(O, o)))
         next!(pbar)
     end
 end
@@ -237,6 +237,8 @@ function build_rewards!(root::Node, p::POMDP, px::POMDPXFile, pbar)
     parameter = ElementNode("Parameter")
     link!(func, parameter)
     next!(pbar)
+
+    link!(parameter, param("* *"; value=0.0))
 
     reward_fn = StateActionReward(p)
     for a=actions(p), s=states(p)
