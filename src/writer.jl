@@ -1,398 +1,277 @@
-#################################################################
-# This file implements a .pomdpx file generator using the
-# POMDPs.jl interface.
-#################################################################
-
 abstract type AbstractPOMDPXFile end
 
-mutable struct POMDPXFile <: AbstractPOMDPXFile
-    file_name::AbstractString
-    description::AbstractString
+@with_kw struct POMDPXFile <: AbstractPOMDPXFile
+    filename::String
+    description::String = "This is a POMDPX file for a POMDP"
 
-    state_name::AbstractString
-    action_name::AbstractString
-    reward_name::AbstractString
-    obs_name::AbstractString
+    s_var_name::String = "state"
+    a_var_name::String = "action"
+    o_var_name::String = "observation"
+    r_var_name::String = "reward"
 
-    initial_belief::Vector{Float64}
+    s_name::Function = normalize
+    a_name::Function = normalize
+    o_name::Function = normalize
 
-    #initial_belief::Vector{Float64} # belief over partially observed vars
+    pretty::Bool = false
+end
 
-    function POMDPXFile(file_name::AbstractString; description::AbstractString="",
-                    initial_belief::Vector{Float64}=Float64[])
+POMDPXFile(filename::String, pretty::Bool) = POMDPXFile(; filename=filename, pretty=pretty)
+POMDPXFile(filename::String) = POMDPXFile(filename, false)
 
-        if isempty(description)
-            description = "This is a pomdpx file for a partially observable MDP"
-        end
+a_var_name( px::POMDPXFile) = px.a_var_name
+s_var_name( px::POMDPXFile) = "$(px.s_var_name)0"
+sp_var_name(px::POMDPXFile) = "$(px.s_var_name)1"
+o_var_name( px::POMDPXFile) = px.o_var_name
+r_var_name( px::POMDPXFile) = px.r_var_name
 
-        self = new()
-        self.file_name = file_name
-        self.description = description
+function build_xml(p::POMDP, px::POMDPXFile)
+    n_states = length(states(p))
+    n_actions = length(actions(p))
+    n_obs = length(observations(p))
+    n_nodes = 14 + n_states + n_states * n_actions * n_obs + n_states * n_actions * 2
+    pbar = Progress(n_nodes; dt=0.01)
 
-        self.state_name = "state"
-        self.action_name = "action"
-        self.reward_name = "reward"
-        self.obs_name = "observation"
+    doc  = XMLDocument()
+    root = ElementNode("pomdpx")
+    root["version"] = 0.1
+    root["id"] = replace(px.filename, ".pomdpx" => "")
+    root["xmlns:xsi"] = "http://www.w3.org/2001/XMLSchema-instance"
+    root["xsi:noNamespaceSchemaLocation"] = "https://raw.githubusercontent.com/JuliaPOMDP/sarsop/master/doc/POMDPX/pomdpx.xsd"
+    setroot!(doc, root)
 
-        self.initial_belief = initial_belief
+    addelement!(root, "Description", px.description)
+    addelement!(root, "Discount", "$(discount(p))")
+    next!(pbar)
 
-        return self
+    build_variables!(root, p, px, pbar)
+    build_initial_beliefs(root, p, px, pbar)
+    build_transitions!(root, p, px, pbar)
+    build_observations!(root, p, px, pbar)
+    build_rewards!(root, p, px, pbar)
+
+    return doc
+end
+
+function build_variables!(root::Node, p::POMDP, px::POMDPXFile, pbar)
+    variables = ElementNode("Variable")
+    link!(root, variables)
+
+    states_node = ElementNode("StateVar")
+    states_node["vnamePrev"] = s_var_name(px)
+    states_node["vnameCurr"] = sp_var_name(px)
+    states_node["fullyObs" ] = "false"
+    link!(variables, states_node)
+
+    actions_node = ElementNode("ActionVar")
+    actions_node["vname"] = a_var_name(px)
+    link!(variables, actions_node)
+
+    obs_node = ElementNode("ObsVar")
+    obs_node["vname"] = o_var_name(px)
+    link!(variables, obs_node)
+
+    reward_node = ElementNode("RewardVar")
+    reward_node["vname"] = r_var_name(px)
+    link!(variables, reward_node)
+    next!(pbar)
+
+    if px.pretty
+        all_states = join(["s_$(px.s_name(s))" for s=ordered_states(p)], " ")
+        addelement!(states_node, "ValueEnum", all_states)
+
+        all_actions = join(["a_$(px.a_name(a))" for a=ordered_actions(p)], " ")
+        addelement!(actions_node, "ValueEnum", all_actions)
+
+        all_observations = join(["o_$(px.o_name(o))" for o=ordered_observations(p)], " ")
+        addelement!(obs_node, "ValueEnum", all_observations)
+    else
+        addelement!(states_node, "NumValues", "$(length(states(p)))")
+        addelement!(actions_node, "NumValues", "$(length(actions(p)))")
+        addelement!(obs_node, "NumValues", "$(length(observations(p)))")
     end
-
 end
 
-
-function Base.write(pomdp::POMDP, pomdpx::AbstractPOMDPXFile)
-    file_name = pomdpx.file_name
-    description = pomdpx.description
-    discount_factor = discount(pomdp)
-
-    # Open file to write to
-    out_file = open("$file_name", "w")
-
-    pomdp_states = ordered_states(pomdp)
-    pomdp_pstates = ordered_states(pomdp)
-    acts = ordered_actions(pomdp)
-    obs = ordered_observations(pomdp)
-    # x = Number of next statement to track Progress
-    # Added approximately after every four lines written to file, 14 next statements outside loops 
-    x = 14 + length(pomdp_states) + length(pomdp_states)*length(acts)*length(obs) + length(pomdp_states)*length(acts) + length(acts)*length(pomdp_pstates)
-    p1 = Progress(x, dt=0.01)
-
-    # Header stuff for xml
-    write(out_file, "<?xml version='1.0' encoding='ISO-8859-1'?>\n\n\n")
-    write(out_file, "<pomdpx version='0.1' id='test' ")
-    write(out_file, "xmlns:='http://www.w3.org/2001/XMLSchema-instance' ")
-    write(out_file, "xsi:noNamespaceSchemaLocation='pomdpx.xsd'>\n\n\n")
-
-    sleep(0.01)
-    next!(p1)
-    ############################################################################
-    # DESCRIPTION
-    ############################################################################
-    write(out_file, "\t<Description> $(description)</Description>\n\n\n")
-
-    ############################################################################
-    # DISCOUNT
-    ############################################################################
-    write(out_file, "\t<Discount>$(discount_factor)</Discount>\n\n\n")
-
-    ############################################################################
-    # VARIABLES
-    ############################################################################
-    write(out_file, "\t<Variable>\n")
-    next!(p1)
-    # State Variables
-    str = state_xml(pomdp, pomdpx)
-    write(out_file, str)
-    next!(p1)
-    # Action Variables
-    str = action_xml(pomdp, pomdpx)
-    write(out_file, str)
-    next!(p1)
-    # Observation Variables
-    str = obs_var_xml(pomdp, pomdpx)
-    write(out_file, str)
-    next!(p1)
-    # Reward Variable
-    str = reward_var_xml(pomdp, pomdpx)
-    write(out_file, str)
-    write(out_file, "\t</Variable>\n\n\n")
-
-    next!(p1)
-    ############################################################################
-    # INITIAL STATE BELIEF
-    ############################################################################
-    belief_xml(pomdp, pomdpx, out_file, p1)
-
-
-    ############################################################################
-    # STATE TRANSITION FUNCTION
-    ############################################################################
-    trans_xml(pomdp, pomdpx, out_file, p1)
-
-
-    ############################################################################
-    # OBS FUNCTION
-    ############################################################################
-    obs_xml(pomdp, pomdpx, out_file, p1)
-
-
-    ############################################################################
-    # REWARD FUNCTION
-    ############################################################################
-    reward_xml(pomdp, pomdpx, out_file, p1)
-
-
-    # CLOSE POMDPX TAG AND FILE
-    write(out_file, "</pomdpx>")
-    close(out_file)
-end
-
-
-############################################################################
-# function: state_xml
-# input: pomdp model, pomdpx type
-# output: string in xml format the defines the state varaibles
-############################################################################
-function state_xml(pomdp::POMDP, pomdpx::POMDPXFile)
-    # defines state vars for a POMDP
-    n_s = length(states(pomdp))
-    sname = pomdpx.state_name
-    str = "\t\t<StateVar vnamePrev=\"$(sname)0\" vnameCurr=\"$(sname)1\" fullyObs=\"false\">\n"
-    str = "$(str)\t\t\t<NumValues>$(n_s)</NumValues>\n"
-    str = "$(str)\t\t</StateVar>\n\n"
-    return str
-end
-############################################################################
-
-
-
-############################################################################
-# function: obs_var_xml
-# input: pomdp model, pomdpx type
-# output: string in xml format the defines the observation varaibles
-############################################################################
-function obs_var_xml(pomdp::POMDP, pomdpx::AbstractPOMDPXFile)
-    # defines observation vars for POMDP and MOMDP
-    n_o = length(observations(pomdp))
-    oname = pomdpx.obs_name
-    str = "\t\t<ObsVar vname=\"$(oname)\">\n"
-    str = "$(str)\t\t\t<NumValues>$(n_o)</NumValues>\n"
-    str = "$(str)\t\t</ObsVar>\n\n"
-    return str
-end
-############################################################################
-
-
-
-############################################################################
-# function: action_xml
-# input: pomdp model, pomdpx type
-# output: string in xml format the defines the action varaibles
-############################################################################
-function action_xml(pomdp::POMDP, pomdpx::AbstractPOMDPXFile)
-    # defines action vars for MDP, POMDP and MOMDP
-    n_a = length(actions(pomdp))
-    aname = pomdpx.action_name
-    str = "\t\t<ActionVar vname=\"$(aname)\">\n"
-    str = "$(str)\t\t\t<NumValues>$(n_a)</NumValues>\n"
-    str = "$(str)\t\t</ActionVar>\n\n"
-    return str
-end
-############################################################################
-
-
-
-############################################################################
-# function: reward_var_xml
-# input: pomdp model, pomdpx type
-# output: string in xml format the defines the reward varaible
-############################################################################
-function reward_var_xml(pomdp::POMDP, pomdpx::AbstractPOMDPXFile)
-    # defines reward var for MDP, POMDP and MOMDP
-    rname = pomdpx.reward_name
-    str = "\t\t<RewardVar vname=\"$(rname)\"/>\n\n"
-    return str
-end
-############################################################################
-
-
-
-############################################################################
-# function: belief_xml
-# input: pomdp model, pomdpx type, output file
-# output: None, writes the initial belief to the output file
-############################################################################
-function belief_xml(pomdp::POMDP, pomdpx::POMDPXFile, out_file::IOStream, p1)
-    belief = pomdpx.initial_belief
-    var = pomdpx.state_name
-    write(out_file, "\t<InitialStateBelief>\n")
-    str = "\t\t<CondProb>\n"
-    str = "$(str)\t\t\t<Var>$(var)0</Var>\n"
-    str = "$(str)\t\t\t<Parent>null</Parent>\n"
-    str = "$(str)\t\t\t<Parameter type = \"TBL\">\n"
-    next!(p1)
-
-    d = initialstate(pomdp)
-    for (i, s) in enumerate(ordered_states(pomdp))
-        p = pdf(d, s)
-        str = "$(str)\t\t\t\t<Entry>\n"
-        str = "$(str)\t\t\t\t\t<Instance>s$(i-1)</Instance>\n"
-        str = "$(str)\t\t\t\t\t<ProbTable>$(p)</ProbTable>\n"
-        str = "$(str)\t\t\t\t</Entry>\n"
-        next!(p1)
+function param(label::String; prob::Real = -1, value::Real = -Inf)
+    entry = ElementNode("Entry")
+    addelement!(entry, "Instance", label)
+    if prob != -1
+        addelement!(entry, "ProbTable", "$(prob)")
     end
-    str = "$(str)\t\t\t</Parameter>\n"
-    str = "$(str)\t\t</CondProb>\n"
-    write(out_file, str)
-    write(out_file, "\t</InitialStateBelief>\n\n\n")
-    next!(p1)
+    if !isinf(value)
+        addelement!(entry, "ValueTable", "$(value)")
+    end
+    return entry
 end
-############################################################################
 
+function build_initial_beliefs(root::Node, p::POMDP, px::POMDPXFile, pbar)
+    ibstate = ElementNode("InitialStateBelief")
+    link!(root, ibstate)
 
+    condprob = ElementNode("CondProb")
+    link!(ibstate, condprob)
 
-############################################################################
-# function: trans_xml
-# input: pomdp model, pomdpx type, output file
-# output: None, writes the transition probability table to the output file
-############################################################################
-function trans_xml(pomdp::POMDP, pomdpx::POMDPXFile, out_file::IOStream, p1)
-    pomdp_states = ordered_states(pomdp)
-    pomdp_pstates = ordered_states(pomdp)
-    acts = ordered_actions(pomdp)
+    addelement!(condprob, "Var", s_var_name(px))
+    addelement!(condprob, "Parent", "null")
 
-    aname = pomdpx.action_name
-    var = pomdpx.state_name
+    parameter = ElementNode("Parameter")
+    parameter["type"] = "TBL"
+    link!(condprob, parameter)
+    next!(pbar)
 
-    write(out_file, "\t<StateTransitionFunction>\n")
-    str = "\t\t<CondProb>\n"
-    str = "$(str)\t\t\t<Var>$(var)1</Var>\n"
-    str = "$(str)\t\t\t<Parent>$(aname) $(var)0</Parent>\n"
-    str = "$(str)\t\t\t<Parameter>\n"
-    write(out_file, str)
-    next!(p1)
-    for (i, s) in enumerate(pomdp_states)
-        if isterminal(pomdp, s) # if terminal, just remain in the same state
-            str = "\t\t\t\t<Entry>\n"
-            str = "$(str)\t\t\t\t\t<Instance>* s$(i-1) s$(i-1)</Instance>\n"
-            str = "$(str)\t\t\t\t\t<ProbTable>1.0</ProbTable>\n"
-            str = "$(str)\t\t\t\t</Entry>\n"
-            write(out_file, str)
-            for i = 1:length(acts)*length(pomdp_pstates)
-                next!(p1)
-            end
+    init_states = initialstate(p)
+    for s in states(p)
+        if px.pretty
+            label = "s_$(px.s_name(s))"
         else
-            for (ai, a) in enumerate(acts)
-                d = transition(pomdp, s, a)
-                for (j, sp) in enumerate(pomdp_pstates)
-                    p = pdf(d, sp)
-                    if p > 0.0
-                        str = "\t\t\t\t<Entry>\n"
-                        str = "$(str)\t\t\t\t\t<Instance>a$(ai-1) s$(i-1) s$(j-1)</Instance>\n"
-                        str = "$(str)\t\t\t\t\t<ProbTable>$(p)</ProbTable>\n"
-                        str = "$(str)\t\t\t\t</Entry>\n"
-                        write(out_file, str)
-                    end
-                    next!(p1)
-                end
+            sidx = stateindex(p, s)
+            label = "s$(sidx - 1)"
+        end
+
+        link!(parameter, param(label; prob=pdf(init_states, s)))
+        next!(pbar)
+    end
+end
+
+function build_transitions!(root::Node, p::POMDP, px::POMDPXFile, pbar)
+    statetrans = ElementNode("StateTransitionFunction")
+    link!(root, statetrans)
+
+    condprob = ElementNode("CondProb")
+    link!(statetrans, condprob)
+
+    addelement!(condprob, "Var", sp_var_name(px))
+    addelement!(condprob, "Parent", "$(a_var_name(px)) $(s_var_name(px))")
+
+    parameter = ElementNode("Parameter")
+    link!(condprob, parameter)
+    next!(pbar)
+
+    link!(parameter, param("* * *"; prob=0.0))
+
+    for s=states(p)
+        if isterminal(p, s)
+            if px.pretty
+                label = "* s_$(px.s_name(s)) s_$(px.s_name(s))"
+            else
+                sidx = stateindex(p, s)
+                label = "* s$(sidx - 1) s$(sidx - 1)"
             end
+
+            link!(parameter, param(label; prob=1.0))
+            for _=1:(length(actions(p)) * length(states(p)))
+                next!(pbar)
+            end
+
+            continue
+        end
+
+        for a=actions(p), sp=states(p)
+            if px.pretty
+                label = "a_$(px.a_name(a)) s_$(px.s_name(s)) s_$(px.s_name(sp))"
+            else
+                (aidx, sidx, spidx) = (actionindex(p, a), stateindex(p, sp), stateindex(p, sp))
+                label = "a$(aidx - 1) s$(sidx - 1) s$(spidx - 1)"
+            end
+
+            T = transition(p, s, a)
+            link!(parameter, param(label; prob=pdf(T, sp)))
+            next!(pbar)
         end
     end
-    str = "\t\t\t</Parameter>\n"
-    str = "$(str)\t\t</CondProb>\n"
-    write(out_file, str)
-    write(out_file, "\t</StateTransitionFunction>\n\n\n")
-    next!(p1)
-    return nothing
 end
-############################################################################
 
+function build_observations!(root::Node, p::POMDP, px::POMDPXFile, pbar)
+    obsfun = ElementNode("ObsFunction")
+    link!(root, obsfun)
 
+    condprob = ElementNode("CondProb")
+    link!(obsfun, condprob)
 
-############################################################################
-# function: obs_xml
-# input: pomdp model, pomdpx type, output file
-# output: None, writes the observation probability table to the output file
-############################################################################
-function obs_xml(pomdp::POMDP, pomdpx::POMDPXFile, out_file::IOStream, p1)
-    pomdp_states = ordered_states(pomdp)
-    acts = ordered_actions(pomdp)
-    obs = ordered_observations(pomdp)
+    addelement!(condprob, "Var", o_var_name(px))
+    addelement!(condprob, "Parent", "$(a_var_name(px)) $(sp_var_name(px))")
 
-    aname = pomdpx.action_name
-    oname = pomdpx.obs_name
-    var = pomdpx.state_name
+    parameter = ElementNode("Parameter")
+    link!(condprob, parameter)
+    next!(pbar)
 
-    write(out_file, "\t<ObsFunction>\n")
-    str = "\t\t<CondProb>\n"
-    str = "$(str)\t\t\t<Var>$(oname)</Var>\n"
-    str = "$(str)\t\t\t<Parent>$(aname) $(var)1</Parent>\n"
-    str = "$(str)\t\t\t<Parameter>\n"
-    write(out_file, str)
-    next!(p1)
+    link!(parameter, param("* * *"; prob=0.0))
 
-    try observation(pomdp, first(acts), first(pomdp_states))
+    try observation(p, first(actions(p)), first(states(p)))
     catch ex
         if ex isa MethodError
-            @warn("""POMDPXFiles only supports observation distributions conditioned on a and sp.
+            @warn("""POMDPXFiles only supports observation distributions conditioned on `a` and `sp`.
 
-                  Check that there is an `observation(::M, ::A, ::S)` method available (or an (::A, ::S) method of the observation function for a QuickPOMDP).
-                  
+                  Check that there is an `observation(::P, ::A, ::S)` method available (or an (::A, ::S) method of the observation function for a QuickPOMDP).
+
                   This warning is designed to give a helpful hint to fix errors, but may not always be relevant.
-                  """, M=typeof(pomdp), S=typeof(first(pomdp_states)), A=typeof(first(acts)))
+                  """, P=typeof(p), S=eltype(states(p)), A=eltype(actions(p)))
         end
         rethrow(ex)
     end
 
-    for (i, s) in enumerate(pomdp_states)
-        for (ai, a) in enumerate(acts)
-            d = observation(pomdp, a, s)
-            for (oi, o) in enumerate(obs)
-                p = pdf(d, o)
-                if p > 0.0
-                    str = "\t\t\t\t<Entry>\n"
-                    str = "$(str)\t\t\t\t\t<Instance>a$(ai-1) s$(i-1) o$(oi-1)</Instance>\n"
-                    str = "$(str)\t\t\t\t\t<ProbTable>$(p)</ProbTable>\n"
-                    str = "$(str)\t\t\t\t</Entry>\n"
-                    write(out_file, str)
-                end
-                next!(p1)
-            end
-        end
-    end
-    write(out_file, "\t\t\t</Parameter>\n")
-    write(out_file, "\t\t</CondProb>\n")
-    write(out_file, "\t</ObsFunction>\n")
-    next!(p1)
-end
-############################################################################
-
-
-
-############################################################################
-# function: reward_xml
-# input: pomdp model, pomdpx type, output file
-# output: None, writes the reward function to the output file
-############################################################################
-function reward_xml(pomdp::POMDP, pomdpx::POMDPXFile, out_file::IOStream, p1)
-    pomdp_states = ordered_states(pomdp)
-    acts = ordered_actions(pomdp)
-    rew = StateActionReward(pomdp)
-
-    aname = pomdpx.action_name
-    var = pomdpx.state_name
-    rname = pomdpx.reward_name
-
-    write(out_file, "\t<RewardFunction>\n")
-    str = "\t\t<Func>\n"
-    str = "$(str)\t\t\t<Var>$(rname)</Var>\n"
-    str = "$(str)\t\t\t<Parent>$(aname) $(var)0</Parent>\n"
-    str = "$(str)\t\t\t<Parameter>\n"
-    write(out_file, str)
-    next!(p1)
-
-    for (i, s) in enumerate(pomdp_states)
-        if !isterminal(pomdp, s)
-            for (ai, a) in enumerate(acts)
-                r = rew(s, a)
-                str = "\t\t\t\t<Entry>\n"
-                str = "$(str)\t\t\t\t\t<Instance>a$(ai-1) s$(i-1)</Instance>\n"
-                str = "$(str)\t\t\t\t\t<ValueTable>$(r)</ValueTable>\n"
-                str = "$(str)\t\t\t\t</Entry>\n"
-                write(out_file, str)
-                next!(p1)
-            end
+    for a=actions(p), sp=states(p), o=observations(p)
+        if px.pretty
+            label = "a_$(px.a_name(a)) s_$(px.s_name(sp)) o_$(px.o_name(o))"
         else
-            for i = 1:length(acts)
-                next!(p1)
-            end
+            (aidx, spidx, oidx) = (actionindex(p, a), stateindex(p, sp), obsindex(p, o))
+            label = "a$(aidx - 1) s$(spidx - 1) o$(oidx - 1)"
         end
-    end
 
-    write(out_file, "\t\t\t</Parameter>\n\t\t</Func>\n")
-    write(out_file, "\t</RewardFunction>\n\n")
-    next!(p1)
+        O = observation(p, a, sp)
+        link!(parameter, param(label; prob=pdf(O, o)))
+        next!(pbar)
+    end
 end
-############################################################################
+
+function build_rewards!(root::Node, p::POMDP, px::POMDPXFile, pbar)
+    rewardfunc = ElementNode("RewardFunction")
+    link!(root, rewardfunc)
+
+    func = ElementNode("Func")
+    link!(rewardfunc, func)
+
+    addelement!(func, "Var", r_var_name(px))
+    addelement!(func, "Parent", "$(a_var_name(px)) $(s_var_name(px))")
+
+    parameter = ElementNode("Parameter")
+    link!(func, parameter)
+    next!(pbar)
+
+    link!(parameter, param("* *"; value=0.0))
+
+    reward_fn = StateActionReward(p)
+    for a=actions(p), s=states(p)
+        if px.pretty
+            label = "a_$(px.a_name(a)) s_$(px.s_name(s))"
+        else
+            (aidx, sidx) = (actionindex(p, a), stateindex(p, s))
+            label = "a$(aidx - 1) s$(sidx - 1)"
+        end
+
+        if !isterminal(p, s)
+            link!(parameter, param(label; value=reward_fn(s, a)))
+        end
+        next!(pbar)
+    end
+end
+
+function Base.write(p::POMDP, px::POMDPXFile)
+    file = open(px.filename, "w")
+    doc = build_xml(p, px)
+    EzXML.prettyprint(file, doc)
+    close(file)
+end
+
+function normalize(s)
+	s = string(s)
+	clean = replace(s, r"[^a-zA-Z0-9]" => "_")
+	return replace(clean, r"_+" => "_")
+end
+
+function prettyprint(p::POMDP, px::POMDPXFile)
+    file = open(px.filename, "w")
+    doc = build_xml(p, px)
+    EzXML.prettyprint(file, doc)
+    close(file)
+end

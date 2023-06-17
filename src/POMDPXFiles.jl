@@ -3,26 +3,21 @@ module POMDPXFiles
 using POMDPs
 using POMDPTools
 using ProgressMeter
-import POMDPs: action, value
+using Parameters
 
-# import o avoid naming conflict in POMDPs.jl (value is overloaded in LightXML)
-import LightXML: parse_file, root, get_elements_by_tagname, attribute, content
-
+import EzXML
+import EzXML: Node, XMLDocument, ElementNode, addelement!, link!, write, readxml, root, findfirst, findall, nodecontent, setroot!, prettyprint
 
 export
     AbstractPOMDPXFile,
     POMDPXFile,
-    MOMDPXFile,
     Alphas,
     POMDPAlphas,
 
-    read_pomdp,
-    action,
-    value
-
+    read_pomdp
 
 include("writer.jl")
 include("policy.jl")
-include("read.jl")
+include("reader.jl")
 
 end # module

@@ -5,9 +5,9 @@ using POMDPModels
 using Test
 
 @testset "basic" begin
-    file_name = "tiger_test.pomdpx"
+    filename = "tiger_test.pomdpx"
     pomdp = TigerPOMDP()
-    pomdpx = POMDPXFile(file_name)
+    pomdpx = POMDPXFile(; filename=filename)
     write(pomdp, pomdpx)
     av, aa = read_pomdp("mypolicy.policy")
 
@@ -15,7 +15,7 @@ using Test
     @test aa == [1,0,0,2,0]
 end
 
-@testset "a, sp observation warning" begin 
+@testset "a, sp observation warning" begin
     struct BadObsPOMDP <: POMDP{Int,Int,Int} end
     POMDPs.states(m::BadObsPOMDP) = 1:2
     POMDPs.actions(m::BadObsPOMDP) = 1:2
@@ -30,11 +30,11 @@ end
     POMDPs.obsindex(m::BadObsPOMDP, s) = s
 
     @test_throws MethodError cd(mktempdir()) do
-        write(BadObsPOMDP(), POMDPXFile("bad_obs_test.pomdpx"))
+        write(BadObsPOMDP(), POMDPXFile(; filename="bad_obs_test.pomdpx"))
     end
 
     POMDPs.observation(m::BadObsPOMDP, a, sp) = Deterministic(1)
     cd(mktempdir()) do
-        write(BadObsPOMDP(), POMDPXFile("bad_obs_test.pomdpx"))
+        write(BadObsPOMDP(), POMDPXFile(; filename="bad_obs_test.pomdpx"))
     end
 end
