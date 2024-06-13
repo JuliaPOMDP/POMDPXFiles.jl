@@ -11,7 +11,7 @@ ProgressMeter = "92933f4c-e287-5a05-a399-4b506db050ca"
 
 [compat]
 LightXML = "0.9"
-POMDPTools = "0.1"
+POMDPTools = "0.1, 1"
 POMDPs = "0.7.3, 0.8, 0.9"
 julia = "1"
 
