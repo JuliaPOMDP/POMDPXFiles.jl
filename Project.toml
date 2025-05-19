@@ -1,16 +1,18 @@
 name = "POMDPXFiles"
 uuid = "c6f6ee83-58c6-5336-a19f-2c76817e1af6"
 repo = "https://github.com/JuliaPOMDP/POMDPXFiles.jl"
-version = "0.3.0"
+version = "0.3.1"
 
 [deps]
 LightXML = "9c8b4983-aa76-5018-a973-4c85ecc9e179"
+MOMDPs = "77fc6e33-3f81-4304-8123-5a68e6b3eeb4"
 POMDPTools = "7588e00f-9cae-40de-98dc-e0c70c48cdd7"
 POMDPs = "a93abf59-7444-517b-a68a-c42f96afdd7d"
 ProgressMeter = "92933f4c-e287-5a05-a399-4b506db050ca"
 
 [compat]
 LightXML = "0.9"
+MOMDPs = "0.1"
 POMDPTools = "0.1, 1"
 POMDPs = "0.9, 1"
 ProgressMeter = "1"
