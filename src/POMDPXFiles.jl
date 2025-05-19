@@ -12,13 +12,10 @@ import LightXML: parse_file, root, get_elements_by_tagname, attribute, content
 export
     AbstractPOMDPXFile,
     POMDPXFile,
-    MOMDPXFile,
     Alphas,
     POMDPAlphas,
 
-    read_pomdp,
-    action,
-    value
+    read_pomdp
 
 
 include("writer.jl")
