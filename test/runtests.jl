@@ -3,7 +3,11 @@ using POMDPTools
 using MOMDPs
 using POMDPXFiles
 using POMDPModels
+
 using RockSample
+using LinearAlgebra
+import StaticArrays: SVector, MVector
+
 using Test
 
 include("rocksample_momdp.jl")
@@ -73,16 +77,16 @@ end
     end
     
     @testset "Reading MOMDP from POMDPX file" begin
-        av, aa, oo = read_momdp("momdp_policy.out")
-        @test size(av) = size(av) == (4, 13)
-        @test length(aa) == 13
-        @test length(oo) == 13
-        @test av == [19.025 18.0737 24.5887  10.0 23.3593 17.5987 9.5 17.5987 23.3593  10.0 19.5 18.525 0.0;
+        am, av, ov = read_momdp("momdp_policy.policy")
+        @test size(am) == (4, 13)
+        @test length(av) == 13
+        @test length(ov) == 13
+        @test am == [19.025 18.0737 24.5887  10.0 23.3593 17.5987 9.5 17.5987 23.3593  10.0 19.5 18.525 0.0;
                     -0.975  9.025   15.8829  10.0 15.0887 17.5987 9.5 17.5987 15.0887  10.0 19.5 18.525 0.0;
                     19.025 18.0737  17.2378  10.0 16.3759  9.025  9.5 9.025   16.3759  10.0 -0.5  9.5   0.0;
                     -0.975  9.025    8.14506 10.0 7.73781  9.025  9.5 9.025    7.73781 10.0 -0.5  9.5   0.0]
-        @test aa == [0, 5, 5, 2, 4, 1, 2, 2, 3, 2, 0, 6, 6]
-        @test oo == [0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4]
+        @test av == [0, 5, 5, 2, 4, 1, 2, 2, 3, 2, 0, 6, 6]
+        @test ov == [0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4]
     end
 end
 

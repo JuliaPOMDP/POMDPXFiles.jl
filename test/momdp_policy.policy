@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <Policy version="0.1" type="value" model="rocksample_momdp.pomdpx" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="policyx.xsd">
-<AlphaVector vectorLength="4" numObsValue="5" numVectors="17">
+<AlphaVector vectorLength="4" numObsValue="5" numVectors="13">
 <Vector action="0" obsValue="0">19.025 -0.975 19.025 -0.975 </Vector>
 <Vector action="5" obsValue="0">18.0737 9.025 18.0737 9.025 </Vector>
 <Vector action="5" obsValue="0">24.5887 15.8829 17.2378 8.14506 </Vector>
