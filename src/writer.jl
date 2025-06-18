@@ -57,7 +57,7 @@ function Base.write(pomdp::POMDP, pomdpx::AbstractPOMDPXFile)
     # x = Number of next statement to track Progress
     # Added approximately after every four lines written to file, 14 next statements outside loops 
     x = 14 + length(pomdp_states) + length(pomdp_states)*length(acts)*length(obs) + length(pomdp_states)*length(acts) + length(acts)*length(pomdp_pstates)
-    p1 = Progress(x, dt=0.01)
+    p1 = Progress(x, dt=0.1)
 
     # Header stuff for xml
     write(out_file, "<?xml version='1.0' encoding='ISO-8859-1'?>\n\n\n")
@@ -464,8 +464,6 @@ function Base.write(momdp::MOMDP, pomdpx::AbstractPOMDPXFile)
 
     write(out_file, "</pomdpx>")
     close(out_file)
-    
-    println("POMDPX file written successfully.")
 end
 
 function state_xml(momdp::MOMDP, pomdpx::POMDPXFile)
