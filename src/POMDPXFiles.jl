@@ -2,23 +2,23 @@ module POMDPXFiles
 
 using POMDPs
 using POMDPTools
+using MOMDPs
 using ProgressMeter
-import POMDPs: action, value
 
-# import o avoid naming conflict in POMDPs.jl (value is overloaded in LightXML)
+
+# import to avoid naming conflict in POMDPs.jl (value is overloaded in LightXML)
 import LightXML: parse_file, root, get_elements_by_tagname, attribute, content
 
 
 export
     AbstractPOMDPXFile,
     POMDPXFile,
-    MOMDPXFile,
     Alphas,
     POMDPAlphas,
+    MOMDPAlphas,
 
     read_pomdp,
-    action,
-    value
+    read_momdp
 
 
 include("writer.jl")
